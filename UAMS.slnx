@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/" />
+  <Folder Name="/src/Modules/">
+    <Project Path="Shared/Shared.csproj" />
+    <Project Path="UAMS.API/UAMS.API.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Campus/">
+    <Project Path="UAMS.People/UAMS.Campus.csproj" />
+  </Folder>
+  <Folder Name="/src/Modules/Identity/">
+    <Project Path="UAMS.Identity/UAMS.Identity.csproj" />
+  </Folder>
+</Solution>
