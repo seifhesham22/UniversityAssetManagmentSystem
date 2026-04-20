@@ -9,7 +9,10 @@ namespace UAMS.Campus.Models
         public string Name { get; private set; } = null!;
         public AssetCategory Handles { get; private set; }
         public Guid DepartmentManagerId { get; private set; }
-        public DepartmentManager DepartmentManager { get; private set; } = null!;
+        public DepartmentManager Manager { get; private set; } = null!;
+
+        private readonly List<Maintainer> _maintainers = new();
+        public IReadOnlyCollection<Maintainer> Maintainers => _maintainers;
         public bool IsActive { get; private set; }
 
         private Department() { }

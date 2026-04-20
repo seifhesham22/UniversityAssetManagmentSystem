@@ -8,6 +8,12 @@ namespace UAMS.Campus.Models
         public string Name { get; private set; } = null!;
         public bool IsActive { get; private set; }
 
+        private readonly List<Student> _students = new();
+        public IReadOnlyCollection<Student> Students => _students;
+
+        private readonly List<AssetManager> _assetManagers = new();
+        public IReadOnlyCollection<AssetManager> AssetManagers => _assetManagers;
+
         private readonly List<FacultyBuilding> _buildingLinks = new();
         public IReadOnlyList<FacultyBuilding> BuildingLinks => _buildingLinks.AsReadOnly();
 
