@@ -1,9 +1,12 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Shared.Enums;
 using System;
 using System.Collections.Generic;
+using System.Security.Principal;
 using System.Text;
 using System.Transactions;
+using System.Xml.Linq;
 using UAMS.Campus.Models;
 using UAMS.Campus.Presistence;
 
@@ -38,7 +41,6 @@ namespace UAMS.Campus.Features.CreateStudentProfile
 
             await _db.students.AddAsync(studentProfile);
             await _db.SaveChangesAsync();
-
 
             return studentProfile.Id;
         }

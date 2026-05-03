@@ -19,7 +19,7 @@ namespace UAMS.Campus.Presistence
         public DbSet<Department> departments => Set<Department>();
         public DbSet<Faculty> faculties => Set<Faculty>();
 
-        public CampusDbContext(DbContextOptions options) : base(options) { }
+        public CampusDbContext(DbContextOptions<CampusDbContext> options) : base(options) { }
 
         protected CampusDbContext() { }
 

@@ -61,11 +61,12 @@ namespace UAMS.Identity.Services.AuthService
                 throw new InvalidOperationException("User already exists under this email");
 
             var User = new User(email, role);
+            User.UserName = email;
 
-            var res = await _userManager.CreateAsync(user, password);
+            var res = await _userManager.CreateAsync(User, password);
             if (!res.Succeeded)
             {
-                var errs = string.Join(", ", res.Errors.SelectMany(x => x.Description).ToList());
+                var errs = string.Join(", ", res.Errors.Select(x => x.Description).ToList());
                 throw new InvalidOperationException(errs);
             }
 

@@ -10,4 +10,7 @@
   <Folder Name="/src/Modules/Identity/">
     <Project Path="UAMS.Identity/UAMS.Identity.csproj" />
   </Folder>
+  <Folder Name="/src/Modules/RoomDesignerAndTicketing/">
+    <Project Path="Room/UAMS.Room.csproj" Id="6c699c09-a492-4d39-b039-a61bf7ec4146" />
+  </Folder>
 </Solution>

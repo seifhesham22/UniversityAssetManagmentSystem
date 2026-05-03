@@ -25,7 +25,7 @@ namespace UAMS.Campus.Features.ListFacultiesQuery
 
             var total = await q.CountAsync();
             var items = await q.OrderBy(x => x.Name)
-                .Skip((1 - request.page) * request.pageSize)
+                .Skip((request.page - 1) * request.pageSize)
                 .Take(request.pageSize)
                 .Select(x => new FacultyDto(x.Id, x.Name))
                 .ToListAsync(cancellationToken);

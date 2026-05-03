@@ -20,6 +20,7 @@ namespace UAMS.Identity.IdentityModels
                 throw new ArgumentNullException(nameof(email), $"Email can't be null or empty");
             Email = email;
             Role = role;
+            UserName = email;
         }
 
         public void Deactivate() => IsActive = false;

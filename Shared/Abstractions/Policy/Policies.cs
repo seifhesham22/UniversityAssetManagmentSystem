@@ -22,5 +22,6 @@ namespace Shared.Abstractions.Policy
         public const string CanDesignRoom = nameof(CanDesignRoom);
         public const string CanManageAssets = nameof(CanManageAssets);
         public const string CanSubmitInspection = nameof(CanSubmitInspection);
+        public const string CanViewFaculties = nameof(CanViewFaculties);
     }
 }

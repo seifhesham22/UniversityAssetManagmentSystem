@@ -9,7 +9,7 @@ using UAMS.Campus.Presistence;
 
 namespace UAMS.Campus.Features.GetTeacherFaculties
 {
-    public sealed record GetTeacherFacultiesCommand(Guid userId) : IRequest<List<TeacherFacultyDto>>;
+   public sealed record GetTeacherFacultiesCommand(Guid userId) : IRequest<List<TeacherFacultyDto>>;
 
    public sealed record TeacherFacultyDto(
        Guid FacultyId,

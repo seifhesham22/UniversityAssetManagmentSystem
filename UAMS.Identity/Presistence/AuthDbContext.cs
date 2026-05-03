@@ -10,7 +10,7 @@ namespace UAMS.Identity.Presistence
 {
     public class AuthDbContext : IdentityDbContext<User, IdentityRole<Guid>, Guid>
     {
-        public AuthDbContext(DbContextOptions options) : base(options)
+        public AuthDbContext(DbContextOptions<AuthDbContext> options) : base(options)
         {
         }
 

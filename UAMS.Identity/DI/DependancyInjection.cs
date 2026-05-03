@@ -26,7 +26,7 @@ namespace UAMS.Identity.DI
                 x.UseNpgsql(configs.GetConnectionString("default"));
             });
 
-            services.AddIdentity<User, IdentityRole<Guid>>(options =>
+            services.AddIdentityCore<User>(options =>
             {
                 options.Password.RequireDigit = true;
                 options.Password.RequiredLength = 10;
@@ -97,6 +97,13 @@ namespace UAMS.Identity.DI
                     p.RequireClaim(AppClaims.Role,
                         Role.AssetManager.ToString(),
                         Role.Maintainer.ToString()));
+
+                options.AddPolicy(Policies.CanViewFaculties, p =>
+                    p.RequireClaim(AppClaims.Role,
+                    Role.Student.ToString(),
+                    Role.SuperAdmin.ToString(),
+                    Role.AssetManager.ToString(),
+                    Role.Teacher.ToString()));
             });
 
             services.AddTransient<IAuthService, AuthService>();

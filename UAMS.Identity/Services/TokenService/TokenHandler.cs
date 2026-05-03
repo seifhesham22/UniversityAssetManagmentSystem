@@ -17,7 +17,8 @@ namespace UAMS.Identity.Services.TokenService
         public string GenerateToken(User user)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]));
-
+            var expireHours = double.Parse(_config["Jwt:ExpireHours"]);
+            var expires = DateTime.UtcNow.AddHours(expireHours);
             var claims = new List<Claim>
             {
                 new(AppClaims.UserId, user.Id.ToString()),
@@ -25,11 +26,11 @@ namespace UAMS.Identity.Services.TokenService
             };
 
             var token = new JwtSecurityToken(
-                issuer: _config["Jwt:issuer"],
-                audience: _config["Jwt:audience"],
+                issuer: _config["Jwt:Issuer"],
+                audience: _config["Jwt:Audience"],
                 claims: claims,
                 signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256),
-                expires: DateTime.UtcNow.AddHours(8)
+                expires: expires
                 );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
