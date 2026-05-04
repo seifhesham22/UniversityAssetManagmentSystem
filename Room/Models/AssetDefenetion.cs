@@ -13,11 +13,11 @@ namespace UAMS.Room.Models
 
         public AssetCategory Category { get; private set; }
 
-        private readonly List<PlacementLocation> _placementLocations = new();
-        public IReadOnlyCollection<PlacementLocation> PlacementLocations => _placementLocations;
+        private readonly List<PlacementLocation> _allowedLocations = new();
+        public IReadOnlyCollection<PlacementLocation> AllowedLocations => _allowedLocations;
 
-        private readonly List<ChecklistItemTemplate> _checkListItems = new();
-        public IReadOnlyCollection<ChecklistItemTemplate> CheckListItems => _checkListItems;
+        private readonly List<ChecklistItemTemplate> _checklistTemplate = new();
+        public IReadOnlyCollection<ChecklistItemTemplate> ChecklistTemplate => _checklistTemplate;
 
         private AssetDefenetion() { }
 
@@ -34,7 +34,7 @@ namespace UAMS.Room.Models
             Id = Guid.NewGuid();
             Name = name.Trim();
             Category = category;
-            _placementLocations.AddRange(locations);
+            _allowedLocations.AddRange(locations);
         }
 
         public ChecklistItemTemplate AddChecklistItem(string description)
@@ -42,20 +42,20 @@ namespace UAMS.Room.Models
             if (string.IsNullOrWhiteSpace(description))
                 throw new ArgumentNullException("Description required.");
 
-            if (_checkListItems.Any(i =>
+            if (_checklistTemplate.Any(i =>
                     string.Equals(i.Description, description.Trim(), StringComparison.OrdinalIgnoreCase)))
                 throw new DomainException("CHECKLIST_ITEM_DUPLICATE", "Duplicate description.");
 
             var item = new ChecklistItemTemplate(Id, description.Trim());
-            _checkListItems.Add(item);
+            _checklistTemplate.Add(item);
             return item;
         }
 
         public void RemoveChecklistItem(Guid itemId)
         {
-            var item = _checkListItems.FirstOrDefault(i => i.Id == itemId)
+            var item = _checklistTemplate.FirstOrDefault(i => i.Id == itemId)
                 ?? throw new ArgumentNullException("Item not found.");
-            _checkListItems.Remove(item);
+            _checklistTemplate.Remove(item);
         }
     }
 }

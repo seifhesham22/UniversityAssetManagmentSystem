@@ -8,7 +8,7 @@ namespace UAMS.Room.Models
     public sealed class ChecklistItemTemplate
     {
         public Guid Id { get; private set; }
-        public Guid AssetId { get; private set; }
+        public Guid AssetDefinitionId { get; private set; }
         public string Description { get; private set; } = null!;
 
         internal ChecklistItemTemplate(Guid assetId, string description)
@@ -17,7 +17,7 @@ namespace UAMS.Room.Models
                 throw new ArgumentNullException("description can't be empty");
 
             Id = Guid.NewGuid();
-            AssetId = assetId;
+            AssetDefinitionId = assetId;
             Description = description;
         }
     }

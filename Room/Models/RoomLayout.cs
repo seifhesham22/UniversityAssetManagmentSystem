@@ -11,16 +11,16 @@ namespace UAMS.Room.Models
         public Guid LastModifiedUserId { get; set; }
         public DateTime LastModifiedDate { get; set; }
 
-        public List<PlacedAssetEntry> _placedAssets = new();
+        public List<PlacedAssetEntry> PlacedAssets = new();
 
         public void ApplySnapShot(List<PlacedAssetEntry> incomingAssets, Guid userId)
         {
             if (!incomingAssets.Any(a => a.Id == Guid.Empty)) throw new InvalidOperationException("All Assets Must Have Valid Id");
             if (!incomingAssets.Any(a => a.AssetId == Guid.Empty)) throw new InvalidOperationException("All Assets Must Have Valid Asset Id");
 
-            var conditionMap = _placedAssets.ToDictionary(pa => pa.Id, pa => pa.Condition);
+            var conditionMap = PlacedAssets.ToDictionary(pa => pa.Id, pa => pa.Condition);
 
-            _placedAssets = incomingAssets;
+            PlacedAssets = incomingAssets;
             foreach (var asset in incomingAssets)
             {
                 asset.Condition = conditionMap.TryGetValue(asset.Id, out var condition)
@@ -34,7 +34,7 @@ namespace UAMS.Room.Models
 
         public void UpdateAssetCondition(Guid placedAssetId, PlacedAssetCondition condition)
         {
-            var entry = _placedAssets.FirstOrDefault(pa => pa.Id == placedAssetId);
+            var entry = PlacedAssets.FirstOrDefault(pa => pa.Id == placedAssetId);
             if (entry is not null) entry.Condition = condition;
         }
     }
