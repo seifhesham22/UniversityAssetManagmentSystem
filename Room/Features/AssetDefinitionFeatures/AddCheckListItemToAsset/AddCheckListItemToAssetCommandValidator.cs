@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace UAMS.Room.Features.AddCheckListItemToAsset
+namespace UAMS.Room.Features.AssetDefinitionFeatures.AddCheckListItemToAsset
 {
     public sealed class AddCheckListItemToAssetCommandValidator
         : AbstractValidator<AddCheckListItemToAssetCommand>

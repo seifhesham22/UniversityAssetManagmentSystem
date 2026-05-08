@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using UAMS.Room.Presistence;
 
-namespace UAMS.Room.Features.AddCheckListItemToAsset
+namespace UAMS.Room.Features.AssetDefinitionFeatures.AddCheckListItemToAsset
 {
     public sealed record AddCheckListItemToAssetCommand(Guid AssetDefinitionId, string Description) : IRequest<Guid>;
     public sealed class AddCheckListItemToAssetCommandHandler(RoomDesignDbContext _db)

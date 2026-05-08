@@ -6,7 +6,7 @@ using System.Text;
 using UAMS.Room.Presistence;
 using UAMS.Room.ViewDtos;
 
-namespace UAMS.Room.Features.GetAssetDefinitionById
+namespace UAMS.Room.Features.AssetDefinitionFeatures.GetAssetDefinitionById
 {
     public sealed record GetAssetDefinitionByIdCommand(Guid Id) : IRequest<AssetDefinitionDetailView>;
     public sealed class GetAssetByIdQueryHandler(RoomDesignDbContext _db)

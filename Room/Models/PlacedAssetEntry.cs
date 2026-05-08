@@ -9,7 +9,7 @@ namespace UAMS.Room.Models
     public sealed class PlacedAssetEntry
     {
         public Guid Id { get; set; }
-        public Guid AssetId { get; set; }
+        public Guid AssetDefinitionId { get; set; }
         public Guid? GroupId { get; set; }
         public string? GroupLabel { get; set; }
         public string AssetName { get; set; } = null!;

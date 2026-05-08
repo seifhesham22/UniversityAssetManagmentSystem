@@ -12,7 +12,7 @@ namespace UAMS.Room.Models
         public string Name { get; private set; } = null!;
 
         public AssetCategory Category { get; private set; }
-
+        public string SvgUrl { get; private set; }
         private readonly List<PlacementLocation> _allowedLocations = new();
         public IReadOnlyCollection<PlacementLocation> AllowedLocations => _allowedLocations;
 
@@ -24,9 +24,12 @@ namespace UAMS.Room.Models
         public AssetDefenetion(
             string name,
             AssetCategory category,
-            IEnumerable<PlacementLocation> placementLocations)
+            IEnumerable<PlacementLocation> placementLocations,
+            string svgUrl)
         {
-            if(string.IsNullOrEmpty(name)) throw new ArgumentNullException("name can't be null or empty");
+            if (string.IsNullOrEmpty(name)) throw new ArgumentNullException("name can't be null or empty");
+            if (string.IsNullOrEmpty(svgUrl)) throw new ArgumentNullException("name can't be null or empty");
+
             var locations = placementLocations.Distinct().ToList();
             if (locations.Count == 0)
                 throw new InvalidOperationException("At least one location must be there");
@@ -35,6 +38,7 @@ namespace UAMS.Room.Models
             Name = name.Trim();
             Category = category;
             _allowedLocations.AddRange(locations);
+            SvgUrl = svgUrl;
         }
 
         public ChecklistItemTemplate AddChecklistItem(string description)

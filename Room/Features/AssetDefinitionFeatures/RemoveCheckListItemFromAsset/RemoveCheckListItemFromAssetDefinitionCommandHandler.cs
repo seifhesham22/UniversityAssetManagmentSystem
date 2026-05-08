@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using UAMS.Room.Presistence;
 
-namespace UAMS.Room.Features.RemoveCheckListItemFromAsset
+namespace UAMS.Room.Features.AssetDefinitionFeatures.RemoveCheckListItemFromAsset
 {
     public sealed record RemoveAssetCheckListItemFromAssetDefinitionCommand(Guid AssetDefinitionId, Guid CheckListItemId) : IRequest;
     public sealed class RemoveCheckListItemFromAssetDefinitionCommandHandler(RoomDesignDbContext _db)

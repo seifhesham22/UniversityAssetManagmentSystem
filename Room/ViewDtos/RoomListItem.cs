@@ -7,7 +7,6 @@ namespace UAMS.Room.ViewDtos
     public sealed record RoomListItem(
     Guid Id,
     string Name,
-    string Code,
     Guid BuildingId,
     Guid FacultyId,
     string Status,

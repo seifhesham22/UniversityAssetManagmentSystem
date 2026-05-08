@@ -1,8 +1,8 @@
 ﻿namespace UAMS.Room.ViewDtos
 {
-    public sealed record AssetPlacementRule(
+    public sealed record AssetDto(
         Guid AssetDefinitionId,
         string AssetName,
-        string Category,
+        string SvgUrl,
         List<string> AllowedLocations);
 }

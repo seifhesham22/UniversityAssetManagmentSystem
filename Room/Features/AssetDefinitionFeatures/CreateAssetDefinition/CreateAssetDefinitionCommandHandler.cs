@@ -7,10 +7,11 @@ using System.Text;
 using UAMS.Room.Models;
 using UAMS.Room.Presistence;
 
-namespace UAMS.Room.Features.CreateAssetDefinition
+namespace UAMS.Room.Features.AssetDefinitionFeatures.CreateAssetDefinition
 {
     public sealed record CreateAssetDefinitionCommand(
         string name,
+        string svgUrl,
         AssetCategory Category,
         List<PlacementLocation> Locations) : IRequest<Guid>;
     public sealed class CreateAssetDefinitionCommandHandler(RoomDesignDbContext _db)
@@ -21,7 +22,8 @@ namespace UAMS.Room.Features.CreateAssetDefinition
             var newAssetDefinition = new AssetDefenetion(
                 name: request.name,
                 category: request.Category,
-                placementLocations: request.Locations);
+                placementLocations: request.Locations,
+                svgUrl: request.svgUrl);
 
             await _db.AssetDefinitions.AddAsync(newAssetDefinition);
             await _db.SaveChangesAsync();

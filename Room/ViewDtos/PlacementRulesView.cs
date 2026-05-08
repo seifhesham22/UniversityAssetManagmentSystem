@@ -1,4 +1,4 @@
 ﻿namespace UAMS.Room.ViewDtos
 {
-    public sealed record PlacementRulesView(List<AssetPlacementRule> Rules);
+    public sealed record PlacementRulesView(List<CategoryAssetsDto> AssetDefinitionDtos);
 }

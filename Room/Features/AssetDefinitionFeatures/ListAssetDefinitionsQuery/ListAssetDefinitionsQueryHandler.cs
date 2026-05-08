@@ -9,7 +9,7 @@ using System.Text;
 using UAMS.Room.Presistence;
 using UAMS.Room.ViewDtos;
 
-namespace UAMS.Room.Features.ListAssetDefinitionsQuery
+namespace UAMS.Room.Features.AssetDefinitionFeatures.ListAssetDefinitionsQuery
 {
     public sealed record ListAssetDefinitionsQueryCommand(
         string? search,

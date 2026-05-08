@@ -15,8 +15,11 @@ namespace UAMS.Room.Models
 
         public void ApplySnapShot(List<PlacedAssetEntry> incomingAssets, Guid userId)
         {
-            if (!incomingAssets.Any(a => a.Id == Guid.Empty)) throw new InvalidOperationException("All Assets Must Have Valid Id");
-            if (!incomingAssets.Any(a => a.AssetId == Guid.Empty)) throw new InvalidOperationException("All Assets Must Have Valid Asset Id");
+            if (!incomingAssets.Any(a => a.Id == Guid.Empty))
+                throw new InvalidOperationException("All Assets Must Have Valid Id");
+
+            if (!incomingAssets.Any(a => a.AssetDefinitionId == Guid.Empty))
+                throw new InvalidOperationException("All Assets Must Have Valid Asset Id");
 
             var conditionMap = PlacedAssets.ToDictionary(pa => pa.Id, pa => pa.Condition);
 
