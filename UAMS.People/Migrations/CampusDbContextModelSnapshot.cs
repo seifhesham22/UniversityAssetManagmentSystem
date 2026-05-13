@@ -18,7 +18,7 @@ namespace UAMS.Campus.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("campus")
-                .HasAnnotation("ProductVersion", "10.0.6")
+                .HasAnnotation("ProductVersion", "10.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -77,7 +77,7 @@ namespace UAMS.Campus.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("DepartmentManagerId")
+                    b.Property<Guid?>("DepartmentManagerId")
                         .HasColumnType("uuid");
 
                     b.Property<int>("Handles")
@@ -155,7 +155,7 @@ namespace UAMS.Campus.Migrations
 
                     b.HasIndex("BuildingId");
 
-                    b.ToTable("FacultyBuilding", "campus");
+                    b.ToTable("facultyBuildings", "campus");
                 });
 
             modelBuilder.Entity("UAMS.Campus.Models.Maintainer", b =>
@@ -273,9 +273,7 @@ namespace UAMS.Campus.Migrations
                 {
                     b.HasOne("UAMS.Campus.Models.DepartmentManager", "Manager")
                         .WithOne("Department")
-                        .HasForeignKey("UAMS.Campus.Models.Department", "DepartmentManagerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UAMS.Campus.Models.Department", "DepartmentManagerId");
 
                     b.Navigation("Manager");
                 });

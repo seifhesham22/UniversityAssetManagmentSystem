@@ -8,5 +8,7 @@ namespace UAMS.Room.Facades
     {
         Task<bool> ExistsAsync(Guid facultyId, CancellationToken ct);
         Task<bool> IsBuildingLinkedAsync(Guid facultyId, Guid buildingId, CancellationToken ct);
+        Task<bool> UserBelongsToFaculty(Guid userId,Guid facultyId, CancellationToken ct);
+        Task<bool> IsAssetManagerOfFaculty(Guid userId, Guid facultyId);
     }
 }

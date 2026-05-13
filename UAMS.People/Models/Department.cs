@@ -8,8 +8,8 @@ namespace UAMS.Campus.Models
         public Guid Id { get; private set; }
         public string Name { get; private set; } = null!;
         public AssetCategory Handles { get; private set; }
-        public Guid DepartmentManagerId { get; private set; }
-        public DepartmentManager Manager { get; private set; } = null!;
+        public Guid? DepartmentManagerId { get; private set; }
+        public DepartmentManager? Manager { get; private set; } = null!;
 
         private readonly List<Maintainer> _maintainers = new();
         public IReadOnlyCollection<Maintainer> Maintainers => _maintainers;
@@ -17,15 +17,13 @@ namespace UAMS.Campus.Models
 
         private Department() { }
 
-        public Department(string name, AssetCategory handles, Guid departmentManagerId)
+        public Department(string name, AssetCategory handles)
         {
             if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException(nameof(name));
-            if (departmentManagerId == Guid.Empty) throw new ArgumentException(nameof(departmentManagerId));
 
             Id = Guid.NewGuid();
             Name = name.Trim();
             Handles = handles;
-            DepartmentManagerId = departmentManagerId;
             IsActive = true;
         }
 

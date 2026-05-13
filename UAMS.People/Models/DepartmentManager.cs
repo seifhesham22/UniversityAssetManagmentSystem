@@ -16,16 +16,14 @@ namespace UAMS.Campus.Models
 
         private DepartmentManager() { }
 
-        public DepartmentManager(Guid userId, string fullName, Guid departmentId)
+        public DepartmentManager(Guid userId, string fullName)
         {
             if (userId == Guid.Empty) throw new ArgumentException(nameof(userId));
-            if (departmentId == Guid.Empty) throw new ArgumentException(nameof(departmentId));
             if (string.IsNullOrWhiteSpace(fullName))
                 throw new ArgumentException("Full name required.", nameof(fullName));
 
             Id = Guid.NewGuid();
             UserId = userId;
-            DepartmentId = departmentId;
             FullName = fullName.Trim();
         }
 

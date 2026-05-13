@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using UAMS.API.DTOs.Auth;
-using UAMS.Campus.Features.CreateStudentProfile;
-using UAMS.Campus.Features.CreateTeacherProfile;
+using UAMS.Campus.Features.StudentFeatures.CreateStudentProfile;
+using UAMS.Campus.Features.TeacherFeatures.CreateTeacherProfile;
 using UAMS.Identity.Services.AuthService;
 
 namespace UAMS.API.Controllers

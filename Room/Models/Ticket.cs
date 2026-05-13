@@ -15,7 +15,7 @@ namespace UAMS.Room.Models
         public Guid RoomId { get; private set; }
         public Guid FacultyId { get; private set; }
         public Guid ReporterId { get; private set; }
-        public Guid DepartmentId { get; private set; }
+        public Guid? DepartmentId { get; private set; }
         public Guid? MaintainerId { get; private set; }
         public Guid? ConfirmedByUserId { get; private set; }
         public TicketStatus Status { get; private set; }

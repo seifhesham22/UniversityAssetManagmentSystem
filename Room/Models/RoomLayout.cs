@@ -10,8 +10,9 @@ namespace UAMS.Room.Models
         public int Version { get; set; } = 1;
         public Guid LastModifiedUserId { get; set; }
         public DateTime LastModifiedDate { get; set; }
+        public Guid RoomId { get; set; }
 
-        public List<PlacedAssetEntry> PlacedAssets = new();
+        public List<PlacedAssetEntry> PlacedAssets { get; private set; } = new();
 
         public void ApplySnapShot(List<PlacedAssetEntry> incomingAssets, Guid userId)
         {
@@ -40,5 +41,8 @@ namespace UAMS.Room.Models
             var entry = PlacedAssets.FirstOrDefault(pa => pa.Id == placedAssetId);
             if (entry is not null) entry.Condition = condition;
         }
+        
+        public bool HasAsset(Guid placedAssetId) 
+            => PlacedAssets.Any(x => x.Id == placedAssetId);
     }
 }

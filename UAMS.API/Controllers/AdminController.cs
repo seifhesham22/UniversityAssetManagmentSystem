@@ -10,17 +10,14 @@ using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using UAMS.API.DTOs.Admin;
-using UAMS.Campus.Features.AssignTeacherToFaculty;
-using UAMS.Campus.Features.CreateAssetManagerProfile;
-using UAMS.Campus.Features.CreateBuilding;
-using UAMS.Campus.Features.CreateDeapartment;
-using UAMS.Campus.Features.CreateDepartmentManagerProfile;
-using UAMS.Campus.Features.CreateFaculty;
-using UAMS.Campus.Features.CreateStudentProfile;
-using UAMS.Campus.Features.LinkFacultyToBuilding;
-using UAMS.Campus.Features.ListBuildingsQuery;
-using UAMS.Campus.Features.ListDepartments;
-using UAMS.Campus.Features.ListFacultiesQuery;
+using UAMS.Campus.Features.AdminFeatures.CreateAssetManagerProfile;
+using UAMS.Campus.Features.AdminFeatures.CreateBuilding;
+using UAMS.Campus.Features.AdminFeatures.CreateDeapartment;
+using UAMS.Campus.Features.AdminFeatures.CreateDepartmentManagerProfile;
+using UAMS.Campus.Features.AdminFeatures.CreateFaculty;
+using UAMS.Campus.Features.AdminFeatures.LinkFacultyToBuilding;
+using UAMS.Campus.Features.AdminFeatures.ListBuildingsQuery;
+using UAMS.Campus.Features.AdminFeatures.UnLinkFacultyFromBuilding;
 using UAMS.Campus.Models;
 using UAMS.Campus.Presistence;
 using UAMS.Identity.Services.AuthService;
@@ -39,6 +36,16 @@ namespace UAMS.API.Controllers
             return Ok(res);
         }
 
+        [HttpGet("buildings")]
+        public async Task<IActionResult> ListBuildings(
+        [FromQuery] string? search,
+        CancellationToken ct = default,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
+        {
+            var res = await mediator.Send(new ListBuildingQuery(search, page, pageSize), ct);
+            return Ok(res);
+        }
 
         [HttpPost("buildings")]
         public async Task<IActionResult> CreateBuilding(CreateBuidlingRequest req, CancellationToken ct = default)
@@ -60,18 +67,6 @@ namespace UAMS.API.Controllers
         CreateDepartmentCommand cmd, CancellationToken ct = default)
         {
             var res = await mediator.Send(cmd, ct);
-            return Ok(res);
-        }
-
-        [HttpGet("departments")]
-        public async Task<IActionResult> ListDepartments(
-            [FromQuery] string? search,
-            [FromQuery] AssetCategory Category,
-            [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 20,
-            CancellationToken ct = default)
-        {
-            var res = await mediator.Send(new ListDepartmentCommand(search,Category,page,pageSize), ct);
             return Ok(res);
         }
 
@@ -111,6 +106,15 @@ namespace UAMS.API.Controllers
                 await _auth.DeleteUserAsync(userId, ct);
                 throw;
             }
+        }
+
+        [HttpDelete("unlink-faculty")]
+        public async Task<IActionResult> UnlinkFaculty(
+            UnLinkFacultyToBuildingRequest request,
+            CancellationToken ct)
+        {
+            await mediator.Send(new UnlinkFacultyCommand(request.facultyId, request.buildingId));
+            return NoContent();
         }
     }
 }

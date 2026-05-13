@@ -43,6 +43,10 @@ namespace UAMS.Campus.Models
             _buildingLinks.Remove(link);
         }
 
+        public bool AssetManagerExist(Guid userId)
+        {
+            return _assetManagers.Any(x => x.UserId == userId);
+        }
         public void Archive() => IsActive = false;
         public void Restore() => IsActive = true;
     }

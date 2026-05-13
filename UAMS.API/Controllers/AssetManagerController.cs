@@ -3,45 +3,77 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Abstractions.Policy;
+using Shared.Authorization;
 using UAMS.API.DTOs.Admin;
-using UAMS.Campus.Features.AssignTeacherToFaculty;
-using UAMS.Campus.Features.GetStudentByFaculty;
-using UAMS.Campus.Features.GetTeacherByFaculty;
-using UAMS.Campus.Features.RemoveTeacherFromFaculty;
+using UAMS.Campus.Features.AssetManagerFeatures.AssignTeacherToFaculty;
+using UAMS.Campus.Features.AssetManagerFeatures.GetMyFacultyTeachers;
+using UAMS.Campus.Features.AssetManagerFeatures.GetStudentsOfMyFaculty;
+using UAMS.Campus.Features.AssetManagerFeatures.RemoveTeacherFromFaculty;
+using UAMS.Campus.Features.AssetManagerFeatures.SearchTeachers;
 
 namespace UAMS.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
     [Authorize(Policy = Policies.AssetManagerOnly)]
-    public class AssetManagerController(IMediator mediator) : ControllerBase
+    public class AssetManagerController(IMediator mediator, CurrentUserFactory _currentUser) : ControllerBase
     {
+        private Guid Me() => _currentUser.Create().UserId;
+
         [HttpPost("teachers/{teacherId:guid}/faculties")]
-        public async Task<IActionResult> AssignFaculty(
-        Guid teacherId, [FromBody] AssignFacultyRequest body, CancellationToken ct)
+        public async Task<IActionResult> AssignTeacherToFaculty(
+        Guid teacherId,
+        CancellationToken ct)
         {
-            await mediator.Send(new AssignTeacherToFacultyCommand(teacherId, body.facultyId), ct);
+            await mediator.Send(new AssignTeacherToFacultyCommand(teacherId, Me()), ct);
             return NoContent();
         }
 
-        [HttpDelete("teachers/{teacherId:guid}/faculties/{facultyId:guid}")]
-        public async Task<IActionResult> RemoveFaculty(
-        Guid teacherId, Guid facultyId, CancellationToken ct)
+        [HttpDelete("teachers/{teacherId:guid}/faculties")]
+        public async Task<IActionResult> RemoveTeacherFromFaculty(
+        Guid teacherId,
+        CancellationToken ct)
         {
-            await mediator.Send(new RemoveTeacherFromFacultyCommand(teacherId, facultyId), ct);
+            await mediator.Send(new RemoveTeacherFromFacultyCommand(teacherId, Me()), ct);
             return NoContent();
         }
 
-        [HttpGet("faculties/{facultyId:guid}/teachers")]
-        public async Task<IActionResult> TeachersByFaculty(
-            Guid facultyId, [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 20, CancellationToken ct = default)
-            => Ok(await mediator.Send(new GetTeacherByFacultyQuery(facultyId, page, pageSize), ct));
+        [HttpGet("teachers/faculties")]
+        public async Task<IActionResult> SearchTeachers(
+            [FromQuery]string search,
+            [FromQuery]bool unAssigned,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            CancellationToken ct = default)
+        {
+            return Ok(await mediator
+                .Send(new SearchTeachersFacultyQuery(
+                    search,
+                    unAssigned,
+                    page,
+                    pageSize)
+                , ct));
+        }
 
-        [HttpGet("faculties/{facultyId:guid}/students")]
+        [HttpGet("teachers/faculties/my")]
+        public async Task<IActionResult> GetMyTeachers()
+        {
+            return Ok(await mediator
+                .Send(new GetMyFacultyTeachersQueryCommand(Me())));
+        }
+
+        [HttpGet("student/my")]
         public async Task<IActionResult> StudentsByFaculty(
-            Guid facultyId, [FromQuery] int page = 1,
-            [FromQuery] int pageSize = 20, CancellationToken ct = default)
-            => Ok(await mediator.Send(new GetStudentByFacultyCommand(facultyId, page, pageSize), ct));
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            CancellationToken ct = default)
+        {
+            return Ok(await mediator
+                .Send(new GetStudentByFacultyCommand(
+                Me(),
+                page,
+                pageSize),
+                ct));
+        }
     }
 }

@@ -33,6 +33,7 @@ namespace UAMS.Room.Models
             FacultyId = facultyId;
             Status = RoomStatus.Open;
             DesignedByUserId = designedByUserId;
+            Layout = new RoomLayout();
         }
 
         public void Close(string reason)

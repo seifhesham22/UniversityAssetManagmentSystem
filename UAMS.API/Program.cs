@@ -2,12 +2,14 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using Shared.Authorization;
 using Shared.Enums;
 using System.Diagnostics;
 using System.Text;
 using UAMS.Campus.DI;
 using UAMS.Identity.DI;
 using UAMS.Identity.IdentityModels;
+using UAMS.Room.DI;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,8 +28,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddIdentityModule(builder.Configuration);
 builder.Services.AddCampusModule(builder.Configuration);
-
+builder.Services.AddRoomDesignModule(builder.Configuration);
 builder.Services.AddControllers();
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<CurrentUserFactory>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {

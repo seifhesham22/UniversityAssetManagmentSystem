@@ -12,7 +12,7 @@ namespace UAMS.Room.Models
         public string Name { get; private set; } = null!;
 
         public AssetCategory Category { get; private set; }
-        public string SvgUrl { get; private set; }
+        public string SvgUrl { get; private set; } = null!;
         private readonly List<PlacementLocation> _allowedLocations = new();
         public IReadOnlyCollection<PlacementLocation> AllowedLocations => _allowedLocations;
 

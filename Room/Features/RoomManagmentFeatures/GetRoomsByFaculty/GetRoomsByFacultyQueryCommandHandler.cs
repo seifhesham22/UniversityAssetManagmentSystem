@@ -5,24 +5,31 @@ using Shared.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using UAMS.Room.Facades;
 using UAMS.Room.Presistence;
 using UAMS.Room.ViewDtos;
 
 namespace UAMS.Room.Features.RoomManagment.GetRoomsByFaculty
 {
     public sealed record GetRoomsByFacultyQueryCommand(
+        Guid userId,
         Guid FacultyId,
         int page = 1,
         int totalSize = 20)
         : IRequest<PagedResult<RoomListItem>>;
 
-    public sealed class GetRoomsByFacultyQueryCommandHandler(RoomDesignDbContext _db)
+    public sealed class GetRoomsByFacultyQueryCommandHandler(
+        RoomDesignDbContext _db,
+        IFacultyFacade _facultyFacade)
         : IRequestHandler<GetRoomsByFacultyQueryCommand, PagedResult<RoomListItem>>
     {
         public async Task<PagedResult<RoomListItem>> Handle(
             GetRoomsByFacultyQueryCommand request,
             CancellationToken cancellationToken)
         {
+            if (!await _facultyFacade.UserBelongsToFaculty(request.userId, request.FacultyId, cancellationToken))
+                throw new UnauthorizedAccessException("User Doesn't belong to this faculty");
+
             var allRooms = _db.Rooms
                 .AsNoTracking()
                 .Where(room => room.FacultyId == request.FacultyId);

@@ -76,7 +76,7 @@ namespace UAMS.Identity.DI
                 options.AddPolicy(Policies.CanDesignRoom, p =>
                     p.RequireClaim(AppClaims.Role,
                         Role.AssetManager.ToString(),
-                        Role.Teacher.ToString()));
+                        Role.SuperAdmin.ToString()));
 
                 options.AddPolicy(Policies.CanViewRoomDesign, p =>
                     p.RequireClaim(AppClaims.Role,

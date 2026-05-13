@@ -14,11 +14,16 @@ namespace UAMS.Room.Features.RoomManagment.CreateRoom
         Guid BuildingId,
         Guid DesignedByUserId,
         string name) : IRequest<Guid>;
-    public sealed class CreateRoomCommandHandler(RoomDesignDbContext _db, IFacultyFacade _facultyFacade)
+    public sealed class CreateRoomCommandHandler(
+        RoomDesignDbContext _db,
+        IFacultyFacade _facultyFacade)
         : IRequestHandler<CreateRoomCommand, Guid>
     {
         public async Task<Guid> Handle(CreateRoomCommand request, CancellationToken cancellationToken)
         {
+            if (!await _facultyFacade.IsAssetManagerOfFaculty(request.DesignedByUserId, request.FacultyId))
+                throw new UnauthorizedAccessException("This asset manager is not member of this faculty");
+
             if (!await _facultyFacade.ExistsAsync(request.FacultyId, cancellationToken))
                 throw new InvalidOperationException(
                     $"Couldn't find a faculty with the Id {request.FacultyId}");
@@ -27,7 +32,7 @@ namespace UAMS.Room.Features.RoomManagment.CreateRoom
                 throw new InvalidOperationException(
                     $"Building not linked to this room");
 
-            if (await _db.Rooms.AnyAsync(x => x.Name == request.name))
+            if (await _db.Rooms.AnyAsync(x => x.Name == request.name && x.FacultyId == request.FacultyId))
                 throw new InvalidOperationException(
                     $"Room with this name: {request.name} already exists");
 

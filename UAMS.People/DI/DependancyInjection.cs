@@ -8,8 +8,10 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Text;
 using UAMS.Campus.Behaviours;
+using UAMS.Campus.FacadeImplementations;
 using UAMS.Campus.Features;
 using UAMS.Campus.Presistence;
+using UAMS.Room.Facades;
 namespace UAMS.Campus.DI
 {
     public static class DependancyInjection
@@ -30,6 +32,8 @@ namespace UAMS.Campus.DI
             services.AddValidatorsFromAssembly(typeof(ApplicationAssemblyMarker).Assembly);
 
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>));
+
+            services.AddScoped<IFacultyFacade, FacultyFacade>();
 
             return services;
         }
