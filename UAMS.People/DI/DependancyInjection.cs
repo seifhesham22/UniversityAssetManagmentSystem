@@ -35,6 +35,7 @@ namespace UAMS.Campus.DI
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>));
 
             services.AddScoped<IFacultyFacade, FacultyFacade>();
+            services.AddScoped<ICampusFacade, CampusFacade>();
             services.AddScoped<IGetCampusUser, GetCampusUser>();
 
             return services;

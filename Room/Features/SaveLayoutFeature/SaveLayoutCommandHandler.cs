@@ -1,16 +1,16 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Shared.Abstractions;
-using System.Collections.Concurrent;
+using UAMS.Room.Facades;
 using UAMS.Room.Models;
 using UAMS.Room.Presistence;
 
 namespace UAMS.Room.Features.LayoutFeatures
 {
     public sealed record SaveLayoutCommand(
-     Guid RoomId,
-     Guid UserId,
-     List<PlacedAssetDto> PlacedAssets) : IRequest;
+        Guid RoomId,
+        Guid UserId,
+        List<PlacedAssetDto> PlacedAssets) : IRequest;
 
     public sealed record PlacedAssetDto(
         Guid Id,
@@ -21,25 +21,34 @@ namespace UAMS.Room.Features.LayoutFeatures
         Guid? GroupId,
         string? GroupLabel);
 
-    internal sealed class SaveLayoutHandler(RoomDesignDbContext db)
+    internal sealed class SaveLayoutHandler(
+        RoomDesignDbContext db,
+        IFacultyFacade _facultyFacade)
         : IRequestHandler<SaveLayoutCommand>
     {
         public async Task Handle(SaveLayoutCommand cmd, CancellationToken ct)
         {
             var room = await db.Rooms
+                .Include(r => r.Layout)
                 .FirstOrDefaultAsync(r => r.Id == cmd.RoomId, ct)
                 ?? throw new DomainException("ROOM_NOT_FOUND", "Room not found.");
+
+            var isManager = await _facultyFacade.IsAssetManagerOfFaculty(cmd.UserId, room.FacultyId);
+            if (!isManager)
+                throw new DomainException("UNAUTHORIZED",
+                    "Only the asset manager of this faculty can modify the room layout.");
 
             var requestedDefIds = cmd.PlacedAssets
                 .Select(a => a.AssetDefinitionId)
                 .Distinct()
                 .ToList();
 
-            var existingDefIds = await db.AssetDefinitions
+            var assetDefs = await db.AssetDefinitions
+                .Include(ad => ad.ChecklistTemplate)
                 .Where(ad => requestedDefIds.Contains(ad.Id))
-                .Select(ad => ad.Id)
-                .ToHashSetAsync(ct);
+                .ToListAsync(ct);
 
+            var existingDefIds = assetDefs.Select(ad => ad.Id).ToHashSet();
             var missing = requestedDefIds.Where(id => !existingDefIds.Contains(id)).ToList();
             if (missing.Count > 0)
                 throw new DomainException("ASSET_DEF_NOT_FOUND",
@@ -69,7 +78,33 @@ namespace UAMS.Room.Features.LayoutFeatures
                 db.PlacedAssetCheckLists.RemoveRange(checklistsToRemove);
             }
 
+            if (diff.AddedPlacedAssetIds.Count > 0)
+            {
+                var defLookup = assetDefs.ToDictionary(ad => ad.Id);
+                var studyYear = CurrentStudyYear();
+
+                foreach (var addedAsset in incoming.Where(a => diff.AddedPlacedAssetIds.Contains(a.Id)))
+                {
+                    if (!defLookup.TryGetValue(addedAsset.AssetDefinitionId, out var def))
+                        continue;
+
+                    if (def.ChecklistTemplate.Count == 0)
+                        continue;
+
+                    var checklist = new PlacedAssetChecklist(addedAsset.Id, studyYear, def.ChecklistTemplate);
+                    db.PlacedAssetCheckLists.Add(checklist);
+                }
+            }
+
             await db.SaveChangesAsync(ct);
+        }
+
+        private static string CurrentStudyYear()
+        {
+            var now = DateTime.UtcNow;
+            return now.Month >= 9
+                ? $"{now.Year}-{now.Year + 1}"
+                : $"{now.Year - 1}-{now.Year}";
         }
     }
 }

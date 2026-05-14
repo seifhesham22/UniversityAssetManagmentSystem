@@ -1,33 +1,38 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Shared.Abstractions;
+using UAMS.Room.Facades;
 using UAMS.Room.Presistence;
-using UAMS.Room.ViewDtos;
 
 namespace UAMS.Room.Features.TicketFeatures.MarkFixed
 {
-    public sealed record MarkFixedCommand(Guid ticketId, Guid MaintainerId) : IRequest;
-    internal class MarkFixedCommandHandler(RoomDesignDbContext _db)
+    public sealed record MarkFixedCommand(Guid ticketId, Guid MaintainerUserId) : IRequest;
+
+    internal sealed class MarkFixedCommandHandler(
+        RoomDesignDbContext _db,
+        ICampusFacade _campusFacade)
         : IRequestHandler<MarkFixedCommand>
     {
         public async Task Handle(MarkFixedCommand request, CancellationToken cancellationToken)
         {
-            var ticket = await _db.Tickets.FirstOrDefaultAsync(x => x.Id == request.ticketId)
-                ?? throw new InvalidOperationException("couldn't find the ticket");
+            var maintainerId = await _campusFacade.GetMaintainerIdByUserIdAsync(request.MaintainerUserId, cancellationToken)
+                ?? throw new DomainException("MAINTAINER_NOT_FOUND", "Maintainer profile not found.");
+
+            var ticket = await _db.Tickets.FirstOrDefaultAsync(x => x.Id == request.ticketId, cancellationToken)
+                ?? throw new DomainException("TICKET_NOT_FOUND", "Ticket not found.");
 
             var room = await _db.Rooms
                 .Include(x => x.Layout)
-                .FirstOrDefaultAsync(x => x.Id == ticket.RoomId);
+                .FirstOrDefaultAsync(x => x.Id == ticket.RoomId, cancellationToken)
+                ?? throw new DomainException("ROOM_NOT_FOUND", "Room not found.");
 
-            if (ticket.MaintainerId != request.MaintainerId)
-                throw new UnauthorizedAccessException("Only assigned maintainer can do this");
+            ticket.MarkFixed(maintainerId);
 
-            ticket.MarkFixed(request.MaintainerId);
             var condition = ticket.GetConditionForCurrentStatus();
             if (condition != null)
                 room.Layout.UpdateAssetCondition(ticket.PlacedAssetId, condition.Value);
+
+            await _db.SaveChangesAsync(cancellationToken);
         }
     }
 }

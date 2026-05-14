@@ -24,9 +24,10 @@ namespace UAMS.Room.Features.AssetDefinitionFeatures.GetAssetDefinitionById
                 assetDefenition.Id,
                 assetDefenition.Name,
                 assetDefenition.Category.ToString(),
+                assetDefenition.SvgUrl,
                 assetDefenition.AllowedLocations.Select(location => location.ToString()).ToList(),
                 assetDefenition.ChecklistTemplate
-                .Select(checklistItem => 
+                .Select(checklistItem =>
                 new ChecklistItemView(checklistItem.Id, checklistItem.Description))
                 .ToList());
         }

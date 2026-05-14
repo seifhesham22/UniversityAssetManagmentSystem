@@ -1,16 +1,14 @@
-﻿using MediatR;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Abstractions.Policy;
 using Shared.Authorization;
 using Shared.Enums;
-using UAMS.API.DTOs.Admin;
-using UAMS.Campus.Features.AdminFeatures.CreateAssetManagerProfile;
-using UAMS.Campus.Features.All.ListFacultiesQuery;
 using UAMS.Campus.Features.DepartmentManagerFeatures.CreateManitainerProfile;
 using UAMS.Campus.Features.DepartmentManagerFeatures.GetManitainerByDepartment;
 using UAMS.Identity.Services.AuthService;
+using UAMS.API.DTOs.Admin;
+using UAMS.Room.Features.TicketFeatures.GetDepartmentTickets;
 
 namespace UAMS.API.Controllers
 {
@@ -25,14 +23,13 @@ namespace UAMS.API.Controllers
         private Guid Me() => _currentUser.Create().UserId;
 
         [HttpPost("maintainers")]
-        public async Task<IActionResult> CreateDepartmentManager(
-        CreateMaintianerRequest req, CancellationToken ct)
+        public async Task<IActionResult> CreateMaintainer(CreateMaintianerRequest req, CancellationToken ct)
         {
             var userId = await _auth.CreateUserAsync(req.email, req.password, Role.Maintainer, ct);
             try
             {
                 var profileId = await mediator.Send(
-                    new CreateMaintainerProfileCommand(Me(),userId , req.fullName), ct);
+                    new CreateMaintainerProfileCommand(Me(), userId, req.fullName), ct);
                 return Ok(new { UserId = userId, ProfileId = profileId });
             }
             catch
@@ -50,6 +47,14 @@ namespace UAMS.API.Controllers
         {
             var res = await mediator.Send(new GetMaintainerByDepartmentCommand(Me(), page, pageSize), ct);
             return Ok(res);
+        }
+
+        // ── Tickets ───────────────────────────────────────────────────────────
+        [HttpGet("tickets")]
+        public async Task<IActionResult> GetDepartmentTickets(CancellationToken ct)
+        {
+            var result = await mediator.Send(new GetDepartmentTicketsQuery(Me()), ct);
+            return Ok(result);
         }
     }
 }

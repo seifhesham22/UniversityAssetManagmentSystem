@@ -47,7 +47,8 @@ namespace UAMS.Room.Features.AssetDefinitionFeatures.ListAssetDefinitionsQuery
                 .Select(x => new AssetDefinitionListItem(
                     x.Id,
                     x.Name,
-                    x.Category.ToString()))
+                    x.Category.ToString(),
+                    x.SvgUrl))
                 .ToListAsync(cancellationToken);
 
             return new PagedResult<AssetDefinitionListItem>(items, total, request.page, request.totalSize);

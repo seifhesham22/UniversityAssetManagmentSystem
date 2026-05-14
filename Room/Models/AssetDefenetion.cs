@@ -61,5 +61,25 @@ namespace UAMS.Room.Models
                 ?? throw new ArgumentNullException("Item not found.");
             _checklistTemplate.Remove(item);
         }
+
+        public void Update(
+            string name,
+            string svgUrl,
+            AssetCategory category,
+            IEnumerable<PlacementLocation> locations)
+        {
+            if (string.IsNullOrWhiteSpace(name)) throw new ArgumentException("Name required.", nameof(name));
+            if (string.IsNullOrWhiteSpace(svgUrl)) throw new ArgumentException("SvgUrl required.", nameof(svgUrl));
+
+            var locs = locations.Distinct().ToList();
+            if (locs.Count == 0)
+                throw new InvalidOperationException("At least one placement location is required.");
+
+            Name = name.Trim();
+            SvgUrl = svgUrl.Trim();
+            Category = category;
+            _allowedLocations.Clear();
+            _allowedLocations.AddRange(locs);
+        }
     }
 }

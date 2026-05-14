@@ -182,6 +182,35 @@ namespace UAMS.Room.Models
         public void Close(Guid userId, string? note = null)
             => TransitionTo(userId, note ?? "Ticket closed.", TicketStatus.Closed);
 
+        public void ReassignMaintainer(Guid newMaintainerId, Guid actorId)
+        {
+            if (Status == TicketStatus.Closed || Status == TicketStatus.EscalatedExternally)
+                throw new DomainException("TICKET_TERMINAL",
+                    "Cannot reassign a maintainer on a terminal ticket.");
+            if (newMaintainerId == Guid.Empty)
+                throw new ArgumentException("Maintainer Id required.", nameof(newMaintainerId));
+
+            MaintainerId = newMaintainerId;
+            _ticketNotes.Add(new TicketNote(Id, actorId, "Ticket reassigned to a different maintainer."));
+            LastUpdatedAt = DateTime.UtcNow;
+        }
+
+        public void ClaimByMaintainer(Guid maintainerId)
+        {
+            if (Status == TicketStatus.Closed || Status == TicketStatus.EscalatedExternally)
+                throw new DomainException("TICKET_TERMINAL",
+                    "Cannot claim a terminal ticket.");
+            if (MaintainerId.HasValue)
+                throw new DomainException("TICKET_ALREADY_CLAIMED",
+                    "This ticket already has an assigned maintainer.");
+            if (maintainerId == Guid.Empty)
+                throw new ArgumentException("Maintainer Id required.", nameof(maintainerId));
+
+            MaintainerId = maintainerId;
+            _ticketNotes.Add(new TicketNote(Id, maintainerId, "Ticket claimed by maintainer."));
+            LastUpdatedAt = DateTime.UtcNow;
+        }
+
         public TicketNote AddNote(Guid authorId, string content)
         {
             if (string.IsNullOrWhiteSpace(content))
