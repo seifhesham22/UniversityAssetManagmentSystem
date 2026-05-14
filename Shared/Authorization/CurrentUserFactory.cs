@@ -18,11 +18,15 @@ namespace Shared.Authorization
             var userId = user.FindFirstValue(AppClaims.UserId)
             ?? throw new UnauthorizedAccessException("UserId claim missing.");
             var role = user.FindFirstValue(AppClaims.Role);
+            var facultyId = user.FindFirstValue(AppClaims.FacultyId);
+            var departmentId = user.FindFirstValue(AppClaims.DepartmentId);
             return new CurrentUser
             {
                 UserId = Guid.Parse(userId),
                 Role = Enum.Parse<Role>(role),
                 Email = user.FindFirstValue(AppClaims.Email) ?? string.Empty,
+                facultyId = Guid.TryParse(facultyId, out var g) ? g : null,
+                departmentId = Guid.TryParse(departmentId, out var d) ? d : null
             };
         }
     }

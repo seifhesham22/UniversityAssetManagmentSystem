@@ -6,6 +6,7 @@ using Shared.Abstractions.Policy;
 using Shared.Authorization;
 using UAMS.API.DTOs.Admin;
 using UAMS.Campus.Features.AssetManagerFeatures.AssignTeacherToFaculty;
+using UAMS.Campus.Features.AssetManagerFeatures.GetAssetManagerProfile;
 using UAMS.Campus.Features.AssetManagerFeatures.GetMyFacultyTeachers;
 using UAMS.Campus.Features.AssetManagerFeatures.GetStudentsOfMyFaculty;
 using UAMS.Campus.Features.AssetManagerFeatures.RemoveTeacherFromFaculty;
@@ -19,6 +20,13 @@ namespace UAMS.API.Controllers
     public class AssetManagerController(IMediator mediator, CurrentUserFactory _currentUser) : ControllerBase
     {
         private Guid Me() => _currentUser.Create().UserId;
+
+        [HttpGet("me")]
+        public async Task<IActionResult> GetMyProfile()
+        {
+            var res = await mediator.Send(new GetAssetManagerProfileCommand(Me()));
+            return Ok(res);
+        }
 
         [HttpPost("teachers/{teacherId:guid}/faculties")]
         public async Task<IActionResult> AssignTeacherToFaculty(

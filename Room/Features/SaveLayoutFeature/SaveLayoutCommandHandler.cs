@@ -1,119 +1,75 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Shared.Abstractions;
 using System.Collections.Concurrent;
 using UAMS.Room.Models;
 using UAMS.Room.Presistence;
 
 namespace UAMS.Room.Features.LayoutFeatures
 {
-    public sealed record SavedPlacedAssetDto(
-    Guid Id,
-    Guid AssetDefinitionId,
-    string AssetName,
-    float X,
-    float Y,
-    float Width,
-    float Height,
-    Guid? GroupId,
-    string? GroupLabel);
     public sealed record SaveLayoutCommand(
-        Guid UserId,
-        Guid RoomId,
-        List<SavedPlacedAssetDto> PlacedAssets) : IRequest;
-    public sealed class SaveLayoutCommandHandler(RoomDesignDbContext _db)
+     Guid RoomId,
+     Guid UserId,
+     List<PlacedAssetDto> PlacedAssets) : IRequest;
+
+    public sealed record PlacedAssetDto(
+        Guid Id,
+        Guid AssetDefinitionId,
+        string AssetName,
+        float X, float Y,
+        float W, float H,
+        Guid? GroupId,
+        string? GroupLabel);
+
+    internal sealed class SaveLayoutHandler(RoomDesignDbContext db)
         : IRequestHandler<SaveLayoutCommand>
     {
-        public async Task Handle(SaveLayoutCommand request, CancellationToken cancellationToken)
+        public async Task Handle(SaveLayoutCommand cmd, CancellationToken ct)
         {
-            var room = await _db.Rooms
-                .Include(room => room.Layout)
-                .ThenInclude(x => x.PlacedAssets)
-                .FirstOrDefaultAsync(room => room.Id == request.RoomId)
-                ?? throw new ArgumentNullException($"couldn't find a room with the Id: {request.RoomId}");
+            var room = await db.Rooms
+                .FirstOrDefaultAsync(r => r.Id == cmd.RoomId, ct)
+                ?? throw new DomainException("ROOM_NOT_FOUND", "Room not found.");
 
-            var currentIds = room.Layout.PlacedAssets.Select(x => x.Id).ToHashSet();
-            var incomingIds = request.PlacedAssets.Select(x => x.Id).ToHashSet();
+            var requestedDefIds = cmd.PlacedAssets
+                .Select(a => a.AssetDefinitionId)
+                .Distinct()
+                .ToList();
 
-            var removedIds = currentIds.Except(incomingIds).ToList();
-            var addedAssets = request.PlacedAssets.Where(x => !currentIds.Contains(x.Id)).ToList();
+            var existingDefIds = await db.AssetDefinitions
+                .Where(ad => requestedDefIds.Contains(ad.Id))
+                .Select(ad => ad.Id)
+                .ToHashSetAsync(ct);
 
-            var existingAssetsToUpdate = request.PlacedAssets.Where(x => currentIds.Contains(x.Id)).ToList();
+            var missing = requestedDefIds.Where(id => !existingDefIds.Contains(id)).ToList();
+            if (missing.Count > 0)
+                throw new DomainException("ASSET_DEF_NOT_FOUND",
+                    $"Unknown AssetDefinitionIds: {string.Join(", ", missing)}");
 
-            if (removedIds.Count > 0)
+            var incoming = cmd.PlacedAssets.Select(a => new PlacedAssetEntry
             {
-                await _db.PlacedAssetCheckLists
-                    .Where(c => removedIds.Contains(c.PlacedAssetId))
-                    .ExecuteDeleteAsync(cancellationToken);
+                Id = a.Id,
+                AssetDefinitionId = a.AssetDefinitionId,
+                AssetName = a.AssetName,
+                X = a.X,
+                Y = a.Y,
+                Width = a.W,
+                Height = a.H,
+                GroupId = a.GroupId,
+                GroupLabel = a.GroupLabel,
+            }).ToList();
 
-                var assetsToRemove = room.Layout.PlacedAssets.Where(x => removedIds.Contains(x.Id)).ToList();
-                foreach (var item in assetsToRemove)
-                {
-                    room.Layout.PlacedAssets.Remove(item);
-                }
+            var diff = room.Layout.ApplySnapshot(incoming, cmd.UserId);
+
+            if (diff.RemovedPlacedAssetIds.Count > 0)
+            {
+                var checklistsToRemove = await db.PlacedAssetCheckLists
+                    .Where(c => diff.RemovedPlacedAssetIds.Contains(c.PlacedAssetId))
+                    .ToListAsync(ct);
+
+                db.PlacedAssetCheckLists.RemoveRange(checklistsToRemove);
             }
 
-            if (existingAssetsToUpdate.Count > 0)
-            {
-                var trackedAssetsDict = room.Layout.PlacedAssets.ToDictionary(x => x.Id);
-
-                foreach (var incoming in existingAssetsToUpdate)
-                {
-                    if (trackedAssetsDict.TryGetValue(incoming.Id, out var existingTrackedAsset))
-                    {
-                        existingTrackedAsset.X = incoming.X;
-                        existingTrackedAsset.Y = incoming.Y;
-                        existingTrackedAsset.Width = incoming.Width;
-                        existingTrackedAsset.Height = incoming.Height;
-                        existingTrackedAsset.GroupId = incoming.GroupId;
-                        existingTrackedAsset.GroupLabel = incoming.GroupLabel;
-                        existingTrackedAsset.AssetName = incoming.AssetName;
-                    }
-                }
-            }
-
-            if (addedAssets.Count > 0)
-            {
-                var addedDefinitionIds = addedAssets.Select(x => x.AssetDefinitionId).Distinct().ToList();
-
-                var definitionDict = await _db.AssetDefinitions
-                    .Include(x => x.ChecklistTemplate)
-                    .Where(x => addedDefinitionIds.Contains(x.Id))
-                    .ToDictionaryAsync(x => x.Id, cancellationToken);
-
-                var newChecklists = new List<PlacedAssetChecklist>(addedAssets.Count);
-                var currentYear = DateTime.UtcNow.Year.ToString();
-
-                foreach (var asset in addedAssets)
-                {
-                    room.Layout.PlacedAssets.Add(new PlacedAssetEntry
-                    {
-                        Id = asset.Id,
-                        AssetDefinitionId = asset.AssetDefinitionId,
-                        GroupId = asset.GroupId,
-                        GroupLabel = asset.GroupLabel,
-                        AssetName = asset.AssetName,
-                        X = asset.X,
-                        Y = asset.Y,
-                        Width = asset.Width,
-                        Height = asset.Height
-                    });
-
-                    if (definitionDict.TryGetValue(asset.AssetDefinitionId, out var definition)
-                        && definition.ChecklistTemplate.Count > 0)
-                    {
-                        newChecklists.Add(new PlacedAssetChecklist(
-                            asset.Id,
-                            currentYear,
-                            definition.ChecklistTemplate));
-                    }
-                }
-
-                if (newChecklists.Count > 0)
-                {
-                    _db.PlacedAssetCheckLists.AddRange(newChecklists);
-                }
-            }
-            await _db.SaveChangesAsync(cancellationToken);
+            await db.SaveChangesAsync(ct);
         }
     }
 }

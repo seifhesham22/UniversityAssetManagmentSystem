@@ -26,5 +26,12 @@
             CheckedByUserId = userId;
             CheckedAtUtc = DateTime.UtcNow;
         }
+
+        internal void Unmark()
+        {
+            IsChecked = false;
+            CheckedByUserId = null;
+            CheckedAtUtc = null;
+        }
     }
 }

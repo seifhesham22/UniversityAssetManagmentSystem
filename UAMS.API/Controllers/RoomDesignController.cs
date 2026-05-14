@@ -22,6 +22,7 @@ namespace UAMS.API.Controllers
     CurrentUserFactory currentUser) : ControllerBase
     {
         private Guid Me() => currentUser.Create().UserId;
+
         [HttpPost("assets"), Authorize(Policies.SuperAdminOnly)]
         public async Task<IActionResult> CreateAsset(
             CreateAssetDefinitionCommand command,
@@ -32,16 +33,17 @@ namespace UAMS.API.Controllers
 
         [HttpPost("create-room")]
         [Authorize(Policy = Policies.CanDesignRoom)]
-        public async Task<IActionResult> CreateRoom(CreateRoomCommand req)
+        public async Task<IActionResult> CreateRoom(CreateRoomRequest req)
         {
             return Ok(await mediator.Send(
                 new CreateRoomCommand(
-                    req.FacultyId,
-                    req.BuildingId,
+                    req.facultyId,
+                    req.buildingId,
                     Me(), req.name)));
         }
 
         public sealed record CloseRoomRequest(Guid RoomId, string? Reason);
+        public sealed record CreateRoomRequest(Guid facultyId, Guid buildingId, string name);
 
         [HttpPost("close-room")]
         [Authorize(Policy = Policies.CanDesignRoom)]

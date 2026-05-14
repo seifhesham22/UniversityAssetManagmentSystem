@@ -45,6 +45,16 @@ namespace UAMS.Room.Models
             entry.Mark(checkedByUserId);
         }
 
+        public void Uncheck(Guid checklistItemId)
+        {
+            var entry = _entries.FirstOrDefault(e => e.ChecklistItem.Id == checklistItemId)
+                ?? throw new DomainException("CHECKLIST_ENTRY_NOT_FOUND", "Entry not found.");
+            if (!entry.IsChecked)
+                throw new DomainException("CHECKLIST_ENTRY_NOT_CHECKED", "Not checked.");
+
+            entry.Unmark();
+        }
+
         public bool IsComplete => _entries.All(e => e.IsChecked);
         public int CheckedCount => _entries.Count(e => e.IsChecked);
         public int TotalCount => _entries.Count;

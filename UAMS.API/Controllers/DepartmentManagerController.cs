@@ -32,7 +32,7 @@ namespace UAMS.API.Controllers
             try
             {
                 var profileId = await mediator.Send(
-                    new CreateMaintainerProfileCommand(Me(), req.fullName), ct);
+                    new CreateMaintainerProfileCommand(Me(),userId , req.fullName), ct);
                 return Ok(new { UserId = userId, ProfileId = profileId });
             }
             catch

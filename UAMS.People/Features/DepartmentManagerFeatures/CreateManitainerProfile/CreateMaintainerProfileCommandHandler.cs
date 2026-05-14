@@ -12,6 +12,7 @@ namespace UAMS.Campus.Features.DepartmentManagerFeatures.CreateManitainerProfile
 {
     public sealed record CreateMaintainerProfileCommand(
         Guid userId,
+        Guid maintainerUserId,
         string fullName) : IRequest<Guid>;
     public sealed class CreateMaintainerProfileCommandHandler(CampusDbContext _db)
         : IRequestHandler<CreateMaintainerProfileCommand, Guid>
@@ -27,7 +28,7 @@ namespace UAMS.Campus.Features.DepartmentManagerFeatures.CreateManitainerProfile
                 throw new UnauthorizedAccessException("only dep manager can do this");
 
             var maintainerProfile = new Maintainer(
-                userId: request.userId,
+                userId: request.maintainerUserId,
                 fullName: request.fullName,
                 departmentId: departmentManager.DepartmentId);
 

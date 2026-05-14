@@ -11,5 +11,8 @@ namespace Shared.Authorization
         public Role Role { get; init; }
         public string Email { get; init; } = string.Empty;
         public bool IsInRole(Role role) => Role == role;
+        public Guid? facultyId { get; init; }
+        public Guid? departmentId { get; init; }
+
     }
 }

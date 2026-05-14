@@ -114,7 +114,7 @@ namespace UAMS.Identity.Services.AuthService
             if (!res)
                 throw new InvalidOperationException("Invalid email or pass");
 
-            var token = _token.GenerateToken(user);
+            var token = await _token.GenerateToken(user);
             return new AuthResult(
                 Token: token,
                 Email: user.Email!,

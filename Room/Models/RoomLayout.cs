@@ -1,4 +1,5 @@
-﻿using Shared.Enums;
+﻿using Shared.Abstractions;
+using Shared.Enums;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -14,26 +15,38 @@ namespace UAMS.Room.Models
 
         public List<PlacedAssetEntry> PlacedAssets { get; private set; } = new();
 
-        public void ApplySnapShot(List<PlacedAssetEntry> incomingAssets, Guid userId)
+        public LayoutDiffResult ApplySnapshot(List<PlacedAssetEntry> incoming, Guid userId)
         {
-            if (!incomingAssets.Any(a => a.Id == Guid.Empty))
-                throw new InvalidOperationException("All Assets Must Have Valid Id");
+            if (incoming.Any(a => a.Id == Guid.Empty))
+                throw new DomainException("PLACED_ASSET_INVALID_ID",
+                    "All placed assets must have a valid Id.");
+            if (incoming.Any(a => a.AssetDefinitionId == Guid.Empty))
+                throw new DomainException("PLACED_ASSET_INVALID_DEF",
+                    "All placed assets must have a valid AssetDefinitionId.");
 
-            if (!incomingAssets.Any(a => a.AssetDefinitionId == Guid.Empty))
-                throw new InvalidOperationException("All Assets Must Have Valid Asset Id");
+            var currentById = PlacedAssets.ToDictionary(pa => pa.Id);
+            var incomingIds = incoming.Select(a => a.Id).ToHashSet();
 
-            var conditionMap = PlacedAssets.ToDictionary(pa => pa.Id, pa => pa.Condition);
+            // Assets that existed before but are gone in the new snapshot.
+            var removedIds = currentById.Keys.Where(id => !incomingIds.Contains(id)).ToList();
 
-            PlacedAssets = incomingAssets;
-            foreach (var asset in incomingAssets)
+            // New assets not previously in the layout.
+            var addedIds = incomingIds.Where(id => !currentById.ContainsKey(id)).ToHashSet();
+
+            // Apply: preserve Condition on existing, default Good on new.
+            foreach (var asset in incoming)
             {
-                asset.Condition = conditionMap.TryGetValue(asset.Id, out var condition)
-                    ? condition
-                    : Shared.Enums.PlacedAssetCondition.Good;
-
-                LastModifiedDate = DateTime.UtcNow;
-                LastModifiedUserId = userId;
+                if (currentById.TryGetValue(asset.Id, out var existing))
+                    asset.Condition = existing.Condition;
+                else
+                    asset.Condition = PlacedAssetCondition.Good;
             }
+
+            PlacedAssets = incoming;
+            LastModifiedDate = DateTime.UtcNow;
+            LastModifiedUserId = userId;
+
+            return new LayoutDiffResult(removedIds, addedIds);
         }
 
         public void UpdateAssetCondition(Guid placedAssetId, PlacedAssetCondition condition)
@@ -41,8 +54,15 @@ namespace UAMS.Room.Models
             var entry = PlacedAssets.FirstOrDefault(pa => pa.Id == placedAssetId);
             if (entry is not null) entry.Condition = condition;
         }
-        
-        public bool HasAsset(Guid placedAssetId) 
-            => PlacedAssets.Any(x => x.Id == placedAssetId);
+
+        public bool HasAsset(Guid placedAssetId) =>
+            PlacedAssets.Any(pa => pa.Id == placedAssetId);
+
+        public PlacedAssetEntry? FindAsset(Guid placedAssetId) =>
+            PlacedAssets.FirstOrDefault(pa => pa.Id == placedAssetId);
     }
-}
+
+    public sealed record LayoutDiffResult(
+        List<Guid> RemovedPlacedAssetIds,
+        HashSet<Guid> AddedPlacedAssetIds);
+    }

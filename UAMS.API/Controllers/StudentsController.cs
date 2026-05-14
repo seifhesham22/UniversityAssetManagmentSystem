@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Abstractions.Policy;
 using Shared.Authorization;
-using UAMS.Campus.Features.StudentFeatures.GetStudentFaculty;
+using UAMS.Campus.Features.AssetManagerFeatures.GetStudentsOfMyFaculty;
 
 namespace UAMS.API.Controllers
 {
@@ -17,7 +17,7 @@ namespace UAMS.API.Controllers
         public async Task<IActionResult> GetStudentFaculty()
         {
             var user = _user.Create().UserId;
-            var res = await mediator.Send(new GetStudentFacultyCommand(user));
+            var res = await mediator.Send(new GetStudentByFacultyCommand(user));
             return Ok(res);
         }
     }
