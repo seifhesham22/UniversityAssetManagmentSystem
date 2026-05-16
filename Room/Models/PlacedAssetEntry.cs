@@ -18,8 +18,8 @@ namespace UAMS.Room.Models
         //Locations On Canvas
         public float X { get; set; }
         public float Y { get; set; }
-        // Size for the Resizable SVGS 
         public float Width { get; set; }
         public float Height { get; set; }
+        public float Rotation { get; set; } = 0;
     }
 }

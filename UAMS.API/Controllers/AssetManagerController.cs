@@ -5,6 +5,7 @@ using Shared.Abstractions.Policy;
 using Shared.Authorization;
 using UAMS.Campus.Features.AssetManagerFeatures.AssignTeacherToFaculty;
 using UAMS.Campus.Features.AssetManagerFeatures.GetAssetManagerProfile;
+using UAMS.Campus.Features.AssetManagerFeatures.GetMyFacultyInfo;
 using UAMS.Campus.Features.AssetManagerFeatures.GetMyFacultyTeachers;
 using UAMS.Campus.Features.AssetManagerFeatures.GetStudentsOfMyFaculty;
 using UAMS.Campus.Features.AssetManagerFeatures.RemoveTeacherFromFaculty;
@@ -24,6 +25,13 @@ namespace UAMS.API.Controllers
         public async Task<IActionResult> GetMyProfile()
         {
             var res = await mediator.Send(new GetAssetManagerProfileCommand(Me()));
+            return Ok(res);
+        }
+
+        [HttpGet("my-faculty")]
+        public async Task<IActionResult> GetMyFacultyInfo(CancellationToken ct = default)
+        {
+            var res = await mediator.Send(new GetMyFacultyInfoQuery(Me()), ct);
             return Ok(res);
         }
 
@@ -50,7 +58,7 @@ namespace UAMS.API.Controllers
             CancellationToken ct = default)
         {
             return Ok(await mediator.Send(
-                new SearchTeachersFacultyQuery(search, unAssigned, page, pageSize), ct));
+                new SearchTeachersFacultyQuery(search, unAssigned, _currentUser.Create().facultyId, page, pageSize), ct));
         }
 
         [HttpGet("teachers/faculties/my")]

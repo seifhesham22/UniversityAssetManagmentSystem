@@ -26,5 +26,12 @@ namespace UAMS.Campus.Models
             FacultyId = facultyId;
             FullName = fullName.Trim();
         }
+
+        public void ReassignToFaculty(Guid newFacultyId)
+        {
+            if (newFacultyId == Guid.Empty)
+                throw new ArgumentException("Faculty id is required.", nameof(newFacultyId));
+            FacultyId = newFacultyId;
+        }
     }
 }

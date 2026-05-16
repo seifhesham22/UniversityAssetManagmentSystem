@@ -14,12 +14,12 @@ namespace UAMS.Room.Features.AssetDefinitionFeatures.AddCheckListItemToAsset
         public async Task<Guid> Handle(AddCheckListItemToAssetCommand request, CancellationToken cancellationToken)
         {
             var assetDefinition = await _db.AssetDefinitions
-                .Include(x => x.ChecklistTemplate)
                 .FirstOrDefaultAsync(x => x.Id == request.AssetDefinitionId)
                 ?? throw new InvalidOperationException(
                     $"couldn't find asset definition with the Id {request.AssetDefinitionId}");
 
             var checklistItemTemplate = assetDefinition.AddChecklistItem(request.Description);
+            await _db.CheckListItemTemplates.AddAsync(checklistItemTemplate, cancellationToken);
             await _db.SaveChangesAsync(cancellationToken);
 
             return checklistItemTemplate.Id;

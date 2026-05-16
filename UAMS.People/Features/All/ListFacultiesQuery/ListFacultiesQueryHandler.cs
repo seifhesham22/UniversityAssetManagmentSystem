@@ -20,7 +20,7 @@ namespace UAMS.Campus.Features.All.ListFacultiesQuery
             var q = _db.faculties.AsQueryable().AsNoTracking();
             if (!string.IsNullOrEmpty(request.search))
             {
-                q = q.Where(x => x.Name.Contains(request.search.Trim()));
+                q = q.Where(x => EF.Functions.ILike(x.Name, $"%{request.search}%"));
             }
 
             var total = await q.CountAsync();

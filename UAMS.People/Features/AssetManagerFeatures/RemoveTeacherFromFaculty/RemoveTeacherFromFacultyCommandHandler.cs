@@ -19,8 +19,10 @@ namespace UAMS.Campus.Features.AssetManagerFeatures.RemoveTeacherFromFaculty
                 .FirstOrDefaultAsync(x => x.UserId == request.userId)
                 ?? throw new UnauthorizedAccessException("Only assetManager Can Do This");
 
-            var teacher = await _db.teachers.FirstOrDefaultAsync(x => x.Id == request.teacherId)
-                ?? throw new InvalidOperationException($"couldn't find a user with the Id {request.userId}");
+            var teacher = await _db.teachers
+                .Include(t => t.Faculties)
+                .FirstOrDefaultAsync(x => x.Id == request.teacherId)
+                ?? throw new InvalidOperationException($"couldn't find a teacher with the Id {request.teacherId}");
 
             teacher.RemoveFromFaculty(assetManager.FacultyId);
             await _db.SaveChangesAsync(cancellationToken);

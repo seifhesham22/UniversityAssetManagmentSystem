@@ -15,7 +15,6 @@ namespace UAMS.Room.Features.AssetDefinitionFeatures.GetAssetDefinitionById
         public async Task<AssetDefinitionDetailView> Handle(GetAssetDefinitionByIdCommand request, CancellationToken cancellationToken)
         {
             var assetDefenition = await _db.AssetDefinitions
-                .Include(x => x.AllowedLocations)
                 .Include(x => x.ChecklistTemplate)
                 .FirstOrDefaultAsync(x => x.Id == request.Id, cancellationToken)
                 ?? throw new InvalidOperationException($"couldn't find an asset definition with the Id {request.Id}");

@@ -6,6 +6,7 @@ using Shared.Authorization;
 using Shared.Enums;
 using System.Diagnostics;
 using System.Text;
+using System.Text.Json.Serialization;
 using UAMS.Campus.DI;
 using UAMS.Identity.DI;
 using UAMS.Identity.IdentityModels;
@@ -40,7 +41,9 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddIdentityModule(builder.Configuration);
 builder.Services.AddCampusModule(builder.Configuration);
 builder.Services.AddRoomDesignModule(builder.Configuration);
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(o =>
+        o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<CurrentUserFactory>();
 builder.Services.AddEndpointsApiExplorer();

@@ -37,6 +37,7 @@ namespace UAMS.Room.Features.RoomManagment.GetRoomById
                         placedAsset.Y,
                         placedAsset.Width,
                         placedAsset.Height,
+                        placedAsset.Rotation,
                         placedAsset.Condition.ToString(),
                         placedAsset.GroupId,
                         placedAsset.GroupLabel)).ToList(),

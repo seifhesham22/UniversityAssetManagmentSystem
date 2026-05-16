@@ -73,7 +73,7 @@ namespace UAMS.API.Controllers
         [HttpPost("assets")]
         [Authorize(Policy = Policies.SuperAdminOnly)]
         public async Task<IActionResult> CreateAsset(
-            CreateAssetDefinitionCommand command, CancellationToken ct)
+            [FromBody] CreateAssetDefinitionCommand command, CancellationToken ct)
         {
             return Ok(new { Id = await mediator.Send(command, ct) });
         }
@@ -88,7 +88,7 @@ namespace UAMS.API.Controllers
         [HttpPut("assets/{id:guid}")]
         [Authorize(Policy = Policies.SuperAdminOnly)]
         public async Task<IActionResult> UpdateAsset(
-            Guid id, UpdateAssetRequest req, CancellationToken ct)
+            Guid id, [FromBody] UpdateAssetRequest req, CancellationToken ct)
         {
             await mediator.Send(
                 new UpdateAssetDefinitionCommand(id, req.Name, req.SvgUrl, req.Category, req.Locations), ct);
@@ -110,7 +110,7 @@ namespace UAMS.API.Controllers
         [HttpPost("assets/{id:guid}/checklist-items")]
         [Authorize(Policy = Policies.SuperAdminOnly)]
         public async Task<IActionResult> AddChecklistItem(
-            Guid id, AddChecklistItemRequest req, CancellationToken ct)
+            Guid id, [FromBody] AddChecklistItemRequest req, CancellationToken ct)
         {
             var itemId = await mediator.Send(
                 new AddCheckListItemToAssetCommand(id, req.Description), ct);
@@ -213,7 +213,7 @@ namespace UAMS.API.Controllers
         [HttpPatch("checklists/{checklistId:guid}")]
         [Authorize(Policy = Policies.CanCheckChecklist)]
         public async Task<IActionResult> UpdateChecklist(
-            Guid checklistId, UpdateChecklistRequest req, CancellationToken ct)
+            Guid checklistId, [FromBody] UpdateChecklistRequest req, CancellationToken ct)
         {
             await mediator.Send(
                 new UpdatePlacedAssetChecklistCommand(

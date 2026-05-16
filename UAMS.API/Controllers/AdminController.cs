@@ -16,7 +16,13 @@ using UAMS.Campus.Features.AdminFeatures.CreateDeapartment;
 using UAMS.Campus.Features.AdminFeatures.CreateDepartmentManagerProfile;
 using UAMS.Campus.Features.AdminFeatures.CreateFaculty;
 using UAMS.Campus.Features.AdminFeatures.LinkFacultyToBuilding;
+using UAMS.Campus.Features.AdminFeatures.GetAdminStats;
+using UAMS.Campus.Features.AdminFeatures.ListAdminFaculties;
+using UAMS.Campus.Features.AdminFeatures.ListAssetManagers;
 using UAMS.Campus.Features.AdminFeatures.ListBuildingsQuery;
+using UAMS.Campus.Features.AdminFeatures.ListDepartmentManagers;
+using UAMS.Campus.Features.AdminFeatures.ReassignAssetManager;
+using UAMS.Campus.Features.AdminFeatures.RemoveAssetManager;
 using UAMS.Campus.Features.AdminFeatures.UnLinkFacultyFromBuilding;
 using UAMS.Campus.Models;
 using UAMS.Campus.Presistence;
@@ -29,10 +35,30 @@ namespace UAMS.API.Controllers
     [Authorize(Policy = Policies.SuperAdminOnly)]
     public class AdminController(IMediator mediator, IAuthService _auth) : ControllerBase
     {
-        [HttpPost("faculties")]
-        public async Task<IActionResult> CreateFaculty([Required][NotNull][MaxLength(80)]string name)
+        public sealed record CreateFacultyRequest(string Name);
+
+        [HttpGet("faculties")]
+        public async Task<IActionResult> ListAdminFaculties(
+            [FromQuery] string? search,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            CancellationToken ct = default)
         {
-            var res = await mediator.Send(new CreateFacultyCommand(name));
+            var res = await mediator.Send(new ListAdminFacultiesQuery(search, page, pageSize), ct);
+            return Ok(res);
+        }
+
+        [HttpGet("stats")]
+        public async Task<IActionResult> GetStats(CancellationToken ct = default)
+        {
+            var res = await mediator.Send(new GetAdminStatsQuery(), ct);
+            return Ok(res);
+        }
+
+        [HttpPost("faculties")]
+        public async Task<IActionResult> CreateFaculty([FromBody] CreateFacultyRequest req)
+        {
+            var res = await mediator.Send(new CreateFacultyCommand(req.Name));
             return Ok(res);
         }
 
@@ -116,5 +142,52 @@ namespace UAMS.API.Controllers
             await mediator.Send(new UnlinkFacultyCommand(request.facultyId, request.buildingId));
             return NoContent();
         }
+
+
+        [HttpGet("asset-managers")]
+        public async Task<IActionResult> ListAssetManagers(
+            [FromQuery] string? search,
+            [FromQuery] Guid? facultyId,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            CancellationToken ct = default)
+        {
+            var res = await mediator.Send(
+                new ListAssetManagersQuery(search, facultyId, page, pageSize), ct);
+            return Ok(res);
+        }
+
+        [HttpPut("asset-managers/{id:guid}/faculty")]
+        public async Task<IActionResult> ReassignAssetManager(
+            Guid id,
+            [FromBody] ReassignRequest req,
+            CancellationToken ct = default)
+        {
+            await mediator.Send(new ReassignAssetManagerCommand(id, req.FacultyId), ct);
+            return NoContent();
+        }
+
+        [HttpDelete("asset-managers/{id:guid}")]
+        public async Task<IActionResult> RemoveAssetManager(Guid id, CancellationToken ct = default)
+        {
+            await mediator.Send(new RemoveAssetManagerCommand(id), ct);
+            return NoContent();
+        }
+
+
+        [HttpGet("dept-managers")]
+        public async Task<IActionResult> ListDeptManagers(
+            [FromQuery] string? search,
+            [FromQuery] Guid? departmentId,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            CancellationToken ct = default)
+        {
+            var res = await mediator.Send(
+                new ListDepartmentManagersQuery(search, departmentId, page, pageSize), ct);
+            return Ok(res);
+        }
+
+        public sealed record ReassignRequest(Guid FacultyId);
     }
 }

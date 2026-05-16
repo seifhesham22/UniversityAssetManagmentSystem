@@ -41,15 +41,19 @@ namespace UAMS.Room.Features.AssetDefinitionFeatures.ListAssetDefinitionsQuery
 
             var total = await assets.CountAsync(cancellationToken);
 
-            var items = await assets
+            var entities = await assets
+                .OrderBy(x => x.Name)
                 .Skip((request.page - 1) * request.totalSize)
                 .Take(request.totalSize)
-                .Select(x => new AssetDefinitionListItem(
-                    x.Id,
-                    x.Name,
-                    x.Category.ToString(),
-                    x.SvgUrl))
                 .ToListAsync(cancellationToken);
+
+            var items = entities.Select(x => new AssetDefinitionListItem(
+                x.Id,
+                x.Name,
+                x.Category.ToString(),
+                x.SvgUrl,
+                x.AllowedLocations.Select(l => l.ToString()).ToList()
+            )).ToList();
 
             return new PagedResult<AssetDefinitionListItem>(items, total, request.page, request.totalSize);
         }

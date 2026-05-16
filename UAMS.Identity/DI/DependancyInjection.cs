@@ -58,7 +58,8 @@ namespace UAMS.Identity.DI
                 options.AddPolicy(Policies.CanReportIssue, p =>
                     p.RequireClaim(AppClaims.Role,
                         Role.Student.ToString(),
-                        Role.Teacher.ToString()));
+                        Role.Teacher.ToString(),
+                        Role.AssetManager.ToString()));
 
                 options.AddPolicy(Policies.CanConfirmFix, p =>
                     p.RequireClaim(AppClaims.Role,

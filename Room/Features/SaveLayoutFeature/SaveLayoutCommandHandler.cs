@@ -18,6 +18,7 @@ namespace UAMS.Room.Features.LayoutFeatures
         string AssetName,
         float X, float Y,
         float W, float H,
+        float Rotation,
         Guid? GroupId,
         string? GroupLabel);
 
@@ -63,6 +64,7 @@ namespace UAMS.Room.Features.LayoutFeatures
                 Y = a.Y,
                 Width = a.W,
                 Height = a.H,
+                Rotation = a.Rotation,
                 GroupId = a.GroupId,
                 GroupLabel = a.GroupLabel,
             }).ToList();

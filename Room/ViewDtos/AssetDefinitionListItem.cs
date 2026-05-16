@@ -4,5 +4,6 @@ namespace UAMS.Room.ViewDtos
         Guid Id,
         string Name,
         string Category,
-        string SvgUrl);
+        string SvgUrl,
+        List<string> AllowedLocations);
 }

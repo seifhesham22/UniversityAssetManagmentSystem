@@ -40,7 +40,7 @@ namespace UAMS.API.Controllers
 
         [HttpPost]
         [Authorize(Policy = Policies.CanReportIssue)]
-        public async Task<IActionResult> ReportTicket(ReportTicketRequest req, CancellationToken ct)
+        public async Task<IActionResult> ReportTicket([FromBody] ReportTicketRequest req, CancellationToken ct)
         {
             var id = await _mediator.Send(
                 new ReportTicketCommand(req.PlacedAssetId, req.RoomId, req.FacultyId, Me(), req.Description), ct);

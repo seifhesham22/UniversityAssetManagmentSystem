@@ -8,6 +8,7 @@
         float Y,
         float Width,
         float Height,
+        float Rotation,
         string Condition,
         Guid? GroupId,
         string? GroupLabel);

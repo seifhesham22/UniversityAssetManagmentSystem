@@ -22,6 +22,7 @@ namespace UAMS.API.Controllers
     {
         private Guid Me() => _currentUser.Create().UserId;
 
+        [AllowAnonymous]
         [HttpGet("faculties")]
         public async Task<IActionResult> ListFaculties(
             [FromQuery] string? search,
@@ -37,7 +38,7 @@ namespace UAMS.API.Controllers
         [HttpGet("departments")]
         public async Task<IActionResult> ListDepartments(
             [FromQuery] string? search,
-            [FromQuery] AssetCategory Category,
+            [FromQuery] AssetCategory? Category = null,
             [FromQuery] int page = 1,
             [FromQuery] int pageSize = 20,
             CancellationToken ct = default)

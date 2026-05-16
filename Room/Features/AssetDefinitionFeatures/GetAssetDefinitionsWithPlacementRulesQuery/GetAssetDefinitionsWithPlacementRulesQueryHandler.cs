@@ -18,7 +18,6 @@ namespace UAMS.Room.Features.AssetDefinitionFeatures.GetAssetDefinitionsWithPlac
         {
             var assets = await _db.AssetDefinitions
                 .AsNoTracking()
-                .Include(x => x.AllowedLocations)
                 .OrderBy(x => x.Name)
                 .ToListAsync(cancellationToken);
 

@@ -15,7 +15,7 @@ namespace UAMS.Room.Models
         private ChecklistItemTemplate() { }
         internal ChecklistItemTemplate(Guid assetId, string description)
         {
-            if (string.IsNullOrEmpty(Description))
+            if (string.IsNullOrEmpty(description))
                 throw new ArgumentNullException("description can't be empty");
 
             Id = Guid.NewGuid();
