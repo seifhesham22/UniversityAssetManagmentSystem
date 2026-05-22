@@ -20,6 +20,8 @@ namespace UAMS.Room.Models
         public Guid? ConfirmedByUserId { get; private set; }
         public TicketStatus Status { get; private set; }
         public TicketDecision Decision { get; private set; }
+        public VkNotificationStatus VkNotificationStatus { get; private set; }
+        public string? AssignedMaintainerVkId { get; private set; }
 
         private readonly List<TicketNote> _ticketNotes = new();
         public IReadOnlyCollection<TicketNote> TicketNotes => _ticketNotes;
@@ -219,6 +221,18 @@ namespace UAMS.Room.Models
             _ticketNotes.Add(note);
             LastUpdatedAt = DateTime.UtcNow;
             return note;
+        }
+
+        public void SetVkNotificationSent(string vkId)
+        {
+            AssignedMaintainerVkId = vkId;
+            VkNotificationStatus = VkNotificationStatus.Sent;
+        }
+
+        public void SetVkNotificationFailed(string vkId)
+        {
+            AssignedMaintainerVkId = vkId;
+            VkNotificationStatus = VkNotificationStatus.Failed;
         }
 
         public PlacedAssetCondition? GetConditionForCurrentStatus() => Status switch

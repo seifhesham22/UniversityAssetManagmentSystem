@@ -13,6 +13,7 @@ namespace UAMS.Campus.Models
         public Guid? DepartmentId { get; private set; }
         public Department? Department { get; private set; }
         public bool IsActive { get; private set; }
+        public string? VkId { get; private set; }
 
         private Maintainer() { }
 
@@ -49,5 +50,6 @@ namespace UAMS.Campus.Models
 
         public void Deactivate() => IsActive = false;
         public void Activate() => IsActive = true;
+        public void SetVkId(string? vkId) => VkId = vkId?.Trim();
     }
 }

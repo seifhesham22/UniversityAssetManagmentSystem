@@ -1,4 +1,4 @@
-﻿namespace UAMS.Room.ViewDtos
+namespace UAMS.Room.ViewDtos
 {
     public sealed record TicketListItem(
         Guid Id,
@@ -14,5 +14,6 @@
         Guid? CurrentMaintainerId,
         string? CurrentMaintainerName,
         DateTime CreatedAtUtc,
-        DateTime UpdatedAtUtc);
+        DateTime UpdatedAtUtc,
+        IReadOnlyList<TicketNoteView> Notes);
 }

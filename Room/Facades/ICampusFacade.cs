@@ -11,5 +11,10 @@ namespace UAMS.Room.Facades
         Task<Guid?> GetDepartmentManagerDepartmentIdAsync(Guid userId, CancellationToken ct);
         Task<bool> IsMaintainerInDepartmentAsync(Guid maintainerId, Guid departmentId, CancellationToken ct);
         Task<bool> DepartmentExistsAsync(Guid departmentId, CancellationToken ct);
+        Task<string?> GetMaintainerVkIdAsync(Guid maintainerId, CancellationToken ct);
+        Task<Guid?> GetMaintainerIdByVkIdAsync(string vkId, CancellationToken ct);
+        Task<string?> GetAssetManagerNameByFacultyIdAsync(Guid facultyId, CancellationToken ct);
+        Task<(string Name, string? Address)?> GetBuildingInfoAsync(Guid buildingId, CancellationToken ct);
+        Task<Dictionary<Guid, string>> GetNoteAuthorNamesAsync(IEnumerable<Guid> authorIds, CancellationToken ct);
     }
 }

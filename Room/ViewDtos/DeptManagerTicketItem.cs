@@ -13,5 +13,7 @@ namespace UAMS.Room.ViewDtos
         Guid? CurrentMaintainerId,
         string? CurrentMaintainerName,
         DateTime CreatedAtUtc,
-        DateTime UpdatedAtUtc);
+        DateTime UpdatedAtUtc,
+        string VkNotificationStatus,
+        IReadOnlyList<TicketNoteView> Notes);
 }

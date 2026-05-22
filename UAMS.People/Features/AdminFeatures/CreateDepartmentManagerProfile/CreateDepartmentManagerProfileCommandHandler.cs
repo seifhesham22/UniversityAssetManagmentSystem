@@ -25,13 +25,15 @@ namespace UAMS.Campus.Features.AdminFeatures.CreateDepartmentManagerProfile
 
             var newDepartmentManager = new DepartmentManager(
                 userId: request.userId,
-                fullName: request.fullName
+                fullName: request.fullName,
+                departmentId: department.Id
                 );
 
-            newDepartmentManager.assignToDepartment(request.departmentId);
+            await _db.AddAsync(newDepartmentManager);
+
+            // Link the department back to this manager so navigation loads correctly
             department.ChangeManager(newDepartmentManager.Id);
 
-            await _db.AddAsync(newDepartmentManager);
             await _db.SaveChangesAsync(cancellationToken);
 
             return newDepartmentManager.Id;

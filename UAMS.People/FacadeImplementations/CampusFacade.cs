@@ -91,5 +91,56 @@ namespace UAMS.Campus.FacadeImplementations
 
         public async Task<bool> DepartmentExistsAsync(Guid departmentId, CancellationToken ct)
             => await _db.departments.AnyAsync(d => d.Id == departmentId, ct);
+
+        public async Task<string?> GetMaintainerVkIdAsync(Guid maintainerId, CancellationToken ct)
+            => await _db.maintainers
+                .Where(m => m.Id == maintainerId)
+                .Select(m => m.VkId)
+                .FirstOrDefaultAsync(ct);
+
+        public async Task<Guid?> GetMaintainerIdByVkIdAsync(string vkId, CancellationToken ct)
+            => await _db.maintainers
+                .Where(m => m.VkId == vkId)
+                .Select(m => (Guid?)m.Id)
+                .FirstOrDefaultAsync(ct);
+
+        public async Task<string?> GetAssetManagerNameByFacultyIdAsync(Guid facultyId, CancellationToken ct)
+            => await _db.asset_managers
+                .Where(a => a.FacultyId == facultyId)
+                .Select(a => a.FullName)
+                .FirstOrDefaultAsync(ct);
+
+        public async Task<(string Name, string? Address)?> GetBuildingInfoAsync(Guid buildingId, CancellationToken ct)
+        {
+            var b = await _db.buildings
+                .Where(b => b.Id == buildingId)
+                .Select(b => new { b.Name, b.Address })
+                .FirstOrDefaultAsync(ct);
+            return b == null ? null : (b.Name, b.Address);
+        }
+
+        public async Task<Dictionary<Guid, string>> GetNoteAuthorNamesAsync(
+            IEnumerable<Guid> authorIds, CancellationToken ct)
+        {
+            var ids    = authorIds.ToHashSet();
+            var result = new Dictionary<Guid, string>();
+
+            // Look up by UserId (asset managers, dept managers, students, teachers)
+            var byUser = await GetUserNamesAsync(ids, ct);
+            foreach (var kv in byUser) result.TryAdd(kv.Key, kv.Value);
+
+            // Look up remaining by maintainer profile Id
+            var unresolved = ids.Where(id => !result.ContainsKey(id)).ToList();
+            if (unresolved.Count > 0)
+            {
+                var maintainerNames = await _db.maintainers
+                    .Where(m => unresolved.Contains(m.Id))
+                    .Select(m => new { m.Id, m.FullName })
+                    .ToListAsync(ct);
+                foreach (var m in maintainerNames) result.TryAdd(m.Id, m.FullName);
+            }
+
+            return result;
+        }
     }
 }

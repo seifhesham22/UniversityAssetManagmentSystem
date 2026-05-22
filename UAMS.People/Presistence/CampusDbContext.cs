@@ -102,6 +102,7 @@ namespace UAMS.Campus.Presistence
                 e.HasKey(m => m.Id);
                 e.HasIndex(m => m.UserId).IsUnique();
                 e.Property(m => m.FullName).HasMaxLength(200);
+                e.Property(m => m.VkId).HasMaxLength(50);
             });
             base.OnModelCreating(modelBuilder);
         }

@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Text;
 using UAMS.Room.Facades;
 using UAMS.Room.Presistence;
+using UAMS.Room.VkBot;
 
 namespace UAMS.Room.DI
 {
@@ -18,12 +19,18 @@ namespace UAMS.Room.DI
             services.AddDbContext<RoomDesignDbContext>(x =>
             {
                 x.UseNpgsql(configuration.GetConnectionString("default"));
+                x.LogTo(Console.WriteLine);
             });
 
             services.AddMediatR(cfg =>
             {
                 cfg.RegisterServicesFromAssembly(typeof(ApplicationAssemblyMarker).Assembly);
             });
+
+            services.AddMemoryCache();
+            services.AddHttpClient("vk");
+            services.AddScoped<IVkBotService, VkBotService>();
+
             return services;
         }
     }

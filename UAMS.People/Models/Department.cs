@@ -36,6 +36,8 @@ namespace UAMS.Campus.Models
             DepartmentManagerId = newManagerId;
         }
 
+        public void ClearManager() => DepartmentManagerId = null;
+
         public void Archive() => IsActive = false;
         public void Restore() => IsActive = true;
     }

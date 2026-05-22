@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using UAMS.Room.Presistence;
@@ -11,9 +12,11 @@ using UAMS.Room.Presistence;
 namespace UAMS.Room.Migrations
 {
     [DbContext(typeof(RoomDesignDbContext))]
-    partial class RoomDesignDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260522140026_Integration-With-Vk")]
+    partial class IntegrationWithVk
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

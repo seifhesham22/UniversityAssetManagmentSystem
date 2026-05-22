@@ -13,7 +13,9 @@ namespace UAMS.Campus.Features.DepartmentManagerFeatures.CreateManitainerProfile
     public sealed record CreateMaintainerProfileCommand(
         Guid userId,
         Guid maintainerUserId,
-        string fullName) : IRequest<Guid>;
+        string fullName,
+        string? vkId = null) : IRequest<Guid>;
+
     public sealed class CreateMaintainerProfileCommandHandler(CampusDbContext _db)
         : IRequestHandler<CreateMaintainerProfileCommand, Guid>
     {
@@ -31,6 +33,9 @@ namespace UAMS.Campus.Features.DepartmentManagerFeatures.CreateManitainerProfile
                 userId: request.maintainerUserId,
                 fullName: request.fullName,
                 departmentId: departmentManager.DepartmentId);
+
+            if (!string.IsNullOrWhiteSpace(request.vkId))
+                maintainerProfile.SetVkId(request.vkId);
 
             await _db.maintainers.AddAsync(maintainerProfile);
             await _db.SaveChangesAsync();

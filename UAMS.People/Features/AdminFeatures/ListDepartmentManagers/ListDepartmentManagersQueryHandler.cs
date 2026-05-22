@@ -71,8 +71,8 @@ namespace UAMS.Campus.Features.AdminFeatures.ListDepartmentManagers
                     dm.FullName,
                     emailMap.GetValueOrDefault(dm.UserId, ""),
                     dm.DepartmentId,
-                    dm.Department.Name,
-                    dm.Department.Handles.ToString()
+                    dm.Department?.Name ?? "",
+                    dm.Department?.Handles.ToString() ?? ""
                 ))
                 .ToList();
 

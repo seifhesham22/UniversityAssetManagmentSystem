@@ -15,7 +15,8 @@ namespace UAMS.API.DTOs.Admin
     public sealed record CreateMaintianerRequest(
         string email,
         string password,
-        string fullName);
+        string fullName,
+        string? vkId = null);
 
     public sealed record CreateDeptManagerRequest(
         string email,

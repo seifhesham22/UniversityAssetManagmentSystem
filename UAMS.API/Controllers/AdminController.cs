@@ -23,6 +23,8 @@ using UAMS.Campus.Features.AdminFeatures.ListBuildingsQuery;
 using UAMS.Campus.Features.AdminFeatures.ListDepartmentManagers;
 using UAMS.Campus.Features.AdminFeatures.ReassignAssetManager;
 using UAMS.Campus.Features.AdminFeatures.RemoveAssetManager;
+using UAMS.Campus.Features.AdminFeatures.ReassignDepartmentManager;
+using UAMS.Campus.Features.AdminFeatures.RemoveDepartmentManager;
 using UAMS.Campus.Features.AdminFeatures.UnLinkFacultyFromBuilding;
 using UAMS.Campus.Models;
 using UAMS.Campus.Presistence;
@@ -186,6 +188,25 @@ namespace UAMS.API.Controllers
             var res = await mediator.Send(
                 new ListDepartmentManagersQuery(search, departmentId, page, pageSize), ct);
             return Ok(res);
+        }
+
+        public sealed record ReassignDeptManagerRequest(Guid DepartmentId);
+
+        [HttpPut("dept-managers/{id:guid}/department")]
+        public async Task<IActionResult> ReassignDeptManager(
+            Guid id,
+            [FromBody] ReassignDeptManagerRequest req,
+            CancellationToken ct = default)
+        {
+            await mediator.Send(new ReassignDepartmentManagerCommand(id, req.DepartmentId), ct);
+            return NoContent();
+        }
+
+        [HttpDelete("dept-managers/{id:guid}")]
+        public async Task<IActionResult> RemoveDeptManager(Guid id, CancellationToken ct = default)
+        {
+            await mediator.Send(new RemoveDepartmentManagerCommand(id), ct);
+            return NoContent();
         }
 
         public sealed record ReassignRequest(Guid FacultyId);

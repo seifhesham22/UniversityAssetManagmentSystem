@@ -14,7 +14,6 @@
         {
             if (ticketId == Guid.Empty) throw new ArgumentException(nameof(ticketId));
             if (authorId == Guid.Empty) throw new ArgumentException(nameof(authorId));
-            Id = Guid.NewGuid();
             TicketId = ticketId;
             AuthorId = authorId;
             Content = content;

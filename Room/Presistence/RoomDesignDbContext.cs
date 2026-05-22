@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -49,10 +50,10 @@ namespace UAMS.Room.Presistence
 
                     layout.Property(l => l.LastModifiedDate);
 
+                    layout.Ignore(l => l.RoomId);
+
                     layout.OwnsMany(l => l.PlacedAssets, pa =>
                     {
-                        pa.Property(a => a.Id);
-
                         //pa.HasKey(a => a.Id);
 
                         pa.Property(a => a.AssetName)
@@ -166,6 +167,12 @@ namespace UAMS.Room.Presistence
 
                 e.Property(t => t.Decision)
                     .HasConversion<int>();
+
+                e.Property(t => t.VkNotificationStatus)
+                    .HasConversion<int>();
+
+                e.Property(t => t.AssignedMaintainerVkId)
+                    .HasMaxLength(50);
 
                 e.Navigation(t => t.TicketNotes)
                     .UsePropertyAccessMode(PropertyAccessMode.Field);

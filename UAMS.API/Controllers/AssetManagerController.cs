@@ -10,6 +10,7 @@ using UAMS.Campus.Features.AssetManagerFeatures.GetMyFacultyTeachers;
 using UAMS.Campus.Features.AssetManagerFeatures.GetStudentsOfMyFaculty;
 using UAMS.Campus.Features.AssetManagerFeatures.RemoveTeacherFromFaculty;
 using UAMS.Campus.Features.AssetManagerFeatures.SearchTeachers;
+using UAMS.Room.Features.TicketFeatures.GetAmActionCount;
 using UAMS.Room.Features.TicketFeatures.GetFacultyTickets;
 
 namespace UAMS.API.Controllers
@@ -78,11 +79,22 @@ namespace UAMS.API.Controllers
         }
 
         // ── Tickets ───────────────────────────────────────────────────────────
-        [HttpGet("tickets/{facultyId:guid}")]
-        public async Task<IActionResult> GetFacultyTickets(Guid facultyId, CancellationToken ct)
+        [HttpGet("tickets")]
+        public async Task<IActionResult> GetFacultyTickets(
+            [FromQuery] bool needsAction = false,
+            CancellationToken ct = default)
         {
-            var result = await mediator.Send(new GetFacultyTicketsQuery(Me(), facultyId), ct);
+            var facultyId = _currentUser.Create().facultyId;
+            var result = await mediator.Send(new GetFacultyTicketsQuery(Me(), facultyId.Value, needsAction), ct);
             return Ok(result);
+        }
+
+        [HttpGet("tickets/action-count")]
+        public async Task<IActionResult> GetActionCount(CancellationToken ct)
+        {
+            var facultyId = _currentUser.Create().facultyId;
+            var count = await mediator.Send(new GetAmActionCountQuery(facultyId.Value), ct);
+            return Ok(new { count });
         }
     }
 }

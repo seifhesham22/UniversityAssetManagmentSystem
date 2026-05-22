@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Shared.Abstractions;
 using UAMS.Room.Facades;
+using UAMS.Room.Models.Enums;
 using UAMS.Room.Presistence;
 using UAMS.Room.ViewDtos;
 
@@ -9,7 +10,8 @@ namespace UAMS.Room.Features.TicketFeatures.GetFacultyTickets
 {
     public sealed record GetFacultyTicketsQuery(
         Guid AssetManagerUserId,
-        Guid FacultyId) : IRequest<List<TicketListItem>>;
+        Guid FacultyId,
+        bool NeedsActionOnly = false) : IRequest<List<TicketListItem>>;
 
     internal sealed class GetFacultyTicketsQueryHandler(
         RoomDesignDbContext _db,
@@ -23,11 +25,19 @@ namespace UAMS.Room.Features.TicketFeatures.GetFacultyTickets
             if (!isManager)
                 throw new DomainException("UNAUTHORIZED", "You are not the asset manager of this faculty.");
 
-            var tickets = await _db.Tickets
-                .AsNoTracking()
-                .Where(t => t.FacultyId == request.FacultyId)
-                .OrderByDescending(t => t.CreatedAt)
-                .ToListAsync(ct);
+            var actionStatuses = new[] {
+                TicketStatus.InspectionDone, TicketStatus.Irreparable,
+                TicketStatus.Fixed, TicketStatus.Replaced
+            };
+
+            var query = _db.Tickets.AsNoTracking()
+                .Include(t => t.TicketNotes)
+                .Where(t => t.FacultyId == request.FacultyId);
+
+            if (request.NeedsActionOnly)
+                query = query.Where(t => actionStatuses.Contains(t.Status));
+
+            var tickets = await query.OrderByDescending(t => t.CreatedAt).ToListAsync(ct);
 
             if (tickets.Count == 0)
                 return [];
@@ -42,6 +52,15 @@ namespace UAMS.Room.Features.TicketFeatures.GetFacultyTickets
 
             var reporterIds = tickets.Select(t => t.ReporterId).Distinct().ToList();
             var reporterNames = await _campusFacade.GetUserNamesAsync(reporterIds, ct);
+
+            // Collect all note author IDs for bulk name lookup
+            var noteAuthorIds = tickets
+                .SelectMany(t => t.TicketNotes.Select(n => n.AuthorId))
+                .Distinct()
+                .ToList();
+            var noteAuthorNames = noteAuthorIds.Count > 0
+                ? await _campusFacade.GetNoteAuthorNamesAsync(noteAuthorIds, ct)
+                : new Dictionary<Guid, string>();
 
             var maintainerIds = tickets
                 .Where(t => t.MaintainerId.HasValue)
@@ -73,6 +92,14 @@ namespace UAMS.Room.Features.TicketFeatures.GetFacultyTickets
                 var assetName = room?.Layout.FindAsset(t.PlacedAssetId)?.AssetName ?? "Unknown";
                 var roomName = room?.Name ?? "Unknown";
 
+                var notes = t.TicketNotes
+                    .OrderBy(n => n.CreatedAtUtc)
+                    .Select(n => new TicketNoteView(
+                        n.Id, n.AuthorId,
+                        noteAuthorNames.GetValueOrDefault(n.AuthorId, "Unknown"),
+                        n.Content, n.CreatedAtUtc))
+                    .ToList();
+
                 return new TicketListItem(
                     Id: t.Id,
                     AssetName: assetName,
@@ -91,7 +118,8 @@ namespace UAMS.Room.Features.TicketFeatures.GetFacultyTickets
                         ? maintainerNames.GetValueOrDefault(t.MaintainerId.Value)
                         : null,
                     CreatedAtUtc: t.CreatedAt,
-                    UpdatedAtUtc: t.LastUpdatedAt);
+                    UpdatedAtUtc: t.LastUpdatedAt,
+                    Notes: notes);
             }).ToList();
         }
     }

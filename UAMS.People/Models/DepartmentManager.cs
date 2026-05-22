@@ -16,7 +16,7 @@ namespace UAMS.Campus.Models
 
         private DepartmentManager() { }
 
-        public DepartmentManager(Guid userId, string fullName)
+        public DepartmentManager(Guid userId, string fullName, Guid departmentId)
         {
             if (userId == Guid.Empty) throw new ArgumentException(nameof(userId));
             if (string.IsNullOrWhiteSpace(fullName))
@@ -25,11 +25,22 @@ namespace UAMS.Campus.Models
             Id = Guid.NewGuid();
             UserId = userId;
             FullName = fullName.Trim();
+            DepartmentId = departmentId;
         }
 
-        public void assignToDepartment(Guid departmentId)
+        public void assignToDepartment(Guid departmentId, Department department)
         {
             this.DepartmentId = departmentId;
+            this.Department = department;
+        }
+
+        public void ReassignToDepartment(Guid newDepartmentId)
+        {
+            if (newDepartmentId == Guid.Empty)
+                throw new ArgumentException("Department id required.", nameof(newDepartmentId));
+            if (newDepartmentId == DepartmentId)
+                throw new InvalidOperationException("Manager is already assigned to this department.");
+            DepartmentId = newDepartmentId;
         }
     }
 }
