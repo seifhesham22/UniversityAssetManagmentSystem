@@ -20,7 +20,9 @@ namespace UAMS.Room.Features.TicketFeatures.RetryVkNotification
             var deptId = await _campusFacade.GetDepartmentManagerDepartmentIdAsync(request.DeptManagerUserId, ct)
                 ?? throw new DomainException("DEPT_MANAGER_NOT_FOUND", "Department manager not found.");
 
-            var ticket = await _db.Tickets.FirstOrDefaultAsync(t => t.Id == request.TicketId, ct)
+            var ticket = await _db.Tickets
+                .Include(t => t.TicketNotes)
+                .FirstOrDefaultAsync(t => t.Id == request.TicketId, ct)
                 ?? throw new DomainException("TICKET_NOT_FOUND", "Ticket not found.");
 
             if (ticket.DepartmentId != deptId)
@@ -44,8 +46,18 @@ namespace UAMS.Room.Features.TicketFeatures.RetryVkNotification
             var facultyName  = room != null ? await _campusFacade.GetFacultyNameAsync(room.FacultyId, ct) ?? "Unknown" : "Unknown";
             var amName       = room != null ? await _campusFacade.GetAssetManagerNameByFacultyIdAsync(room.FacultyId, ct) : null;
 
+            IEnumerable<(string, string, DateTime)>? noteHistory = null;
+            if (ticket.TicketNotes.Count > 0)
+            {
+                var authorIds   = ticket.TicketNotes.Select(n => n.AuthorId).Distinct().ToList();
+                var authorNames = await _campusFacade.GetNoteAuthorNamesAsync(authorIds, ct);
+                noteHistory = ticket.TicketNotes
+                    .OrderBy(n => n.CreatedAtUtc)
+                    .Select(n => (authorNames.GetValueOrDefault(n.AuthorId, "Unknown"), n.Content, n.CreatedAtUtc));
+            }
+
             var message  = VkNotifications.TicketAssigned(ticket.Id, assetName, roomName,
-                buildingInfo?.Name ?? "Unknown", buildingInfo?.Address, facultyName, amName);
+                buildingInfo?.Name ?? "Unknown", buildingInfo?.Address, facultyName, amName, noteHistory);
             var keyboard = VkKeyboard.ForStatus(ticket.Status);
 
             var sent = await _vkBot.SendMessageAsync(vkId, message, keyboard, ct);

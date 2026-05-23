@@ -58,9 +58,9 @@ namespace UAMS.Room.Features.TicketFeatures.GetFacultyTickets
                 .SelectMany(t => t.TicketNotes.Select(n => n.AuthorId))
                 .Distinct()
                 .ToList();
-            var noteAuthorNames = noteAuthorIds.Count > 0
-                ? await _campusFacade.GetNoteAuthorNamesAsync(noteAuthorIds, ct)
-                : new Dictionary<Guid, string>();
+            var noteAuthorInfo = noteAuthorIds.Count > 0
+                ? await _campusFacade.GetNoteAuthorInfoAsync(noteAuthorIds, ct)
+                : new Dictionary<Guid, (string Name, string Role)>();
 
             var maintainerIds = tickets
                 .Where(t => t.MaintainerId.HasValue)
@@ -94,10 +94,12 @@ namespace UAMS.Room.Features.TicketFeatures.GetFacultyTickets
 
                 var notes = t.TicketNotes
                     .OrderBy(n => n.CreatedAtUtc)
-                    .Select(n => new TicketNoteView(
-                        n.Id, n.AuthorId,
-                        noteAuthorNames.GetValueOrDefault(n.AuthorId, "Unknown"),
-                        n.Content, n.CreatedAtUtc))
+                    .Select(n =>
+                    {
+                        var info = noteAuthorInfo.GetValueOrDefault(n.AuthorId, (Name: "Unknown", Role: "Unknown"));
+                        var role = n.AuthorId == t.ReporterId ? "Reporter" : info.Role;
+                        return new TicketNoteView(n.Id, n.AuthorId, info.Name, role, n.Content, n.CreatedAtUtc);
+                    })
                     .ToList();
 
                 return new TicketListItem(

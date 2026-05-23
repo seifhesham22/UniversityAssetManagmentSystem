@@ -16,5 +16,6 @@ namespace UAMS.Room.Facades
         Task<string?> GetAssetManagerNameByFacultyIdAsync(Guid facultyId, CancellationToken ct);
         Task<(string Name, string? Address)?> GetBuildingInfoAsync(Guid buildingId, CancellationToken ct);
         Task<Dictionary<Guid, string>> GetNoteAuthorNamesAsync(IEnumerable<Guid> authorIds, CancellationToken ct);
+        Task<Dictionary<Guid, (string Name, string Role)>> GetNoteAuthorInfoAsync(IEnumerable<Guid> authorIds, CancellationToken ct);
     }
 }

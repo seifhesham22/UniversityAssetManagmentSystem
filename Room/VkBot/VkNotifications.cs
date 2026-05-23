@@ -9,7 +9,8 @@ namespace UAMS.Room.VkBot
             string buildingName,
             string? buildingAddress,
             string facultyName,
-            string? assetManagerName)
+            string? assetManagerName,
+            IEnumerable<(string Author, string Content, DateTime At)>? notes = null)
         {
             var lines = new System.Text.StringBuilder();
             lines.AppendLine("🔧 New ticket assigned to you!");
@@ -23,6 +24,16 @@ namespace UAMS.Room.VkBot
             if (!string.IsNullOrEmpty(assetManagerName))
                 lines.AppendLine($"👤 Manager:  {assetManagerName}");
             lines.AppendLine($"🔖 Ticket:   #{ticketId.ToString()[..8].ToUpper()}");
+
+            var noteList = notes?.ToList();
+            if (noteList is { Count: > 0 })
+            {
+                lines.AppendLine();
+                lines.AppendLine("📝 Notes:");
+                foreach (var n in noteList.TakeLast(5))
+                    lines.AppendLine($"  [{n.At:dd.MM HH:mm}] {n.Author}: {n.Content}");
+            }
+
             lines.AppendLine();
             lines.Append("Use the buttons below to update the ticket status.");
             return lines.ToString();

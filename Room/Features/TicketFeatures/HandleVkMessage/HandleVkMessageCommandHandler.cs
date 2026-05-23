@@ -196,11 +196,23 @@ namespace UAMS.Room.Features.TicketFeatures.HandleVkMessage
             var statusText = VkKeyboard.HumanStatus(ticket.Status);
             var keyboard   = VkKeyboard.ForStatus(ticket.Status);
 
+            var noteSection = new System.Text.StringBuilder();
+            if (ticket.TicketNotes.Count > 0)
+            {
+                var authorIds   = ticket.TicketNotes.Select(n => n.AuthorId).Distinct().ToList();
+                var authorNames = await _campusFacade.GetNoteAuthorNamesAsync(authorIds, ct);
+                noteSection.AppendLine();
+                noteSection.AppendLine("📝 Notes:");
+                foreach (var n in ticket.TicketNotes.OrderBy(n => n.CreatedAtUtc).TakeLast(5))
+                    noteSection.AppendLine($"  [{n.CreatedAtUtc:dd.MM HH:mm}] {authorNames.GetValueOrDefault(n.AuthorId, "Unknown")}: {n.Content}");
+            }
+
             await _vkBot.SendMessageAsync(vkUserId,
                 $"📋 Ticket Status\n" +
                 $"Asset: {assetName}\n" +
                 $"Room:  {room?.Name ?? "Unknown"}\n" +
-                $"Status: {statusText}",
+                $"Status: {statusText}" +
+                noteSection.ToString(),
                 keyboard, ct);
         }
 

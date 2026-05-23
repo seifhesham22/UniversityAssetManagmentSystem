@@ -22,7 +22,9 @@ namespace UAMS.Room.Features.TicketFeatures.SendForFix
     {
         public async Task Handle(SendForFixCommand request, CancellationToken ct)
         {
-            var ticket = await _db.Tickets.FirstOrDefaultAsync(t => t.Id == request.TicketId, ct)
+            var ticket = await _db.Tickets
+                .Include(t => t.TicketNotes)
+                .FirstOrDefaultAsync(t => t.Id == request.TicketId, ct)
                 ?? throw new DomainException("TICKET_NOT_FOUND", "Ticket not found.");
 
             var isManager = await _facultyFacade.IsAssetManagerOfFaculty(request.UserId, ticket.FacultyId);
@@ -59,8 +61,18 @@ namespace UAMS.Room.Features.TicketFeatures.SendForFix
             var amName       = await _campusFacade.GetAssetManagerNameByFacultyIdAsync(room.FacultyId, ct);
             var assetName    = room.Layout.FindAsset(ticket.PlacedAssetId)?.AssetName ?? "Unknown";
 
+            IEnumerable<(string, string, DateTime)>? noteHistory = null;
+            if (ticket.TicketNotes.Count > 0)
+            {
+                var authorIds   = ticket.TicketNotes.Select(n => n.AuthorId).Distinct().ToList();
+                var authorNames = await _campusFacade.GetNoteAuthorNamesAsync(authorIds, ct);
+                noteHistory = ticket.TicketNotes
+                    .OrderBy(n => n.CreatedAtUtc)
+                    .Select(n => (authorNames.GetValueOrDefault(n.AuthorId, "Unknown"), n.Content, n.CreatedAtUtc));
+            }
+
             var message  = VkNotifications.TicketAssigned(ticket.Id, assetName, room.Name,
-                buildingInfo?.Name ?? "Unknown", buildingInfo?.Address, facultyName, amName);
+                buildingInfo?.Name ?? "Unknown", buildingInfo?.Address, facultyName, amName, noteHistory);
             var keyboard = VkKeyboard.ForStatus(ticket.Status);
             await _vkBot.SendMessageAsync(vkId, message, keyboard, ct);
         }

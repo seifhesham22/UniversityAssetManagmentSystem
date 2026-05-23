@@ -23,7 +23,9 @@ namespace UAMS.Room.Features.TicketFeatures.AssignMaintainer
             var departmentId = await _campusFacade.GetDepartmentManagerDepartmentIdAsync(request.DeptManagerUserId, ct)
                 ?? throw new DomainException("DEPT_MANAGER_NOT_FOUND", "Department manager profile not found.");
 
-            var ticket = await _db.Tickets.FirstOrDefaultAsync(t => t.Id == request.TicketId, ct)
+            var ticket = await _db.Tickets
+                .Include(t => t.TicketNotes)
+                .FirstOrDefaultAsync(t => t.Id == request.TicketId, ct)
                 ?? throw new DomainException("TICKET_NOT_FOUND", "Ticket not found.");
 
             if (ticket.DepartmentId != departmentId)
@@ -41,7 +43,7 @@ namespace UAMS.Room.Features.TicketFeatures.AssignMaintainer
             var vkId = await _campusFacade.GetMaintainerVkIdAsync(request.MaintainerId, ct);
             if (!string.IsNullOrEmpty(vkId))
             {
-                var (message, keyboard) = await BuildNotification(ticket.Id, ticket.RoomId, ticket.PlacedAssetId, ticket.Status, ct);
+                var (message, keyboard) = await BuildNotification(ticket, ct);
                 var sent = await _vkBot.SendMessageAsync(vkId, message, keyboard, ct);
                 if (sent) ticket.SetVkNotificationSent(vkId);
                 else      ticket.SetVkNotificationFailed(vkId);
@@ -50,27 +52,30 @@ namespace UAMS.Room.Features.TicketFeatures.AssignMaintainer
         }
 
         internal async Task<(string Message, string? Keyboard)> BuildNotification(
-            Guid ticketId, Guid roomId, Guid placedAssetId,
-            Models.Enums.TicketStatus status, CancellationToken ct)
+            Models.Ticket ticket, CancellationToken ct)
         {
             var room = await _db.Rooms.AsNoTracking().Include(r => r.Layout)
-                .FirstOrDefaultAsync(r => r.Id == roomId, ct);
+                .FirstOrDefaultAsync(r => r.Id == ticket.RoomId, ct);
 
-            var assetName      = room?.Layout.FindAsset(placedAssetId)?.AssetName ?? "Unknown";
-            var roomName       = room?.Name ?? "Unknown";
-            var buildingInfo   = room != null
-                ? await _campusFacade.GetBuildingInfoAsync(room.BuildingId, ct)
-                : null;
-            var facultyName    = room != null
-                ? await _campusFacade.GetFacultyNameAsync(room.FacultyId, ct) ?? "Unknown"
-                : "Unknown";
-            var amName         = room != null
-                ? await _campusFacade.GetAssetManagerNameByFacultyIdAsync(room.FacultyId, ct)
-                : null;
+            var assetName    = room?.Layout.FindAsset(ticket.PlacedAssetId)?.AssetName ?? "Unknown";
+            var roomName     = room?.Name ?? "Unknown";
+            var buildingInfo = room != null ? await _campusFacade.GetBuildingInfoAsync(room.BuildingId, ct) : null;
+            var facultyName  = room != null ? await _campusFacade.GetFacultyNameAsync(room.FacultyId, ct) ?? "Unknown" : "Unknown";
+            var amName       = room != null ? await _campusFacade.GetAssetManagerNameByFacultyIdAsync(room.FacultyId, ct) : null;
 
-            var message  = VkNotifications.TicketAssigned(ticketId, assetName, roomName,
-                buildingInfo?.Name ?? "Unknown", buildingInfo?.Address, facultyName, amName);
-            var keyboard = VkKeyboard.ForStatus(status);
+            IEnumerable<(string, string, DateTime)>? noteHistory = null;
+            if (ticket.TicketNotes.Count > 0)
+            {
+                var authorIds   = ticket.TicketNotes.Select(n => n.AuthorId).Distinct().ToList();
+                var authorNames = await _campusFacade.GetNoteAuthorNamesAsync(authorIds, ct);
+                noteHistory = ticket.TicketNotes
+                    .OrderBy(n => n.CreatedAtUtc)
+                    .Select(n => (authorNames.GetValueOrDefault(n.AuthorId, "Unknown"), n.Content, n.CreatedAtUtc));
+            }
+
+            var message  = VkNotifications.TicketAssigned(ticket.Id, assetName, roomName,
+                buildingInfo?.Name ?? "Unknown", buildingInfo?.Address, facultyName, amName, noteHistory);
+            var keyboard = VkKeyboard.ForStatus(ticket.Status);
             return (message, keyboard);
         }
     }

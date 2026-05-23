@@ -66,6 +66,9 @@ namespace UAMS.Room.Features.TicketFeatures.CreateTicket
                 request.FacultyId,
                 request.ReportedByUserId);
 
+            if (!string.IsNullOrWhiteSpace(request.Description))
+                ticket.AddNote(request.ReportedByUserId, request.Description);
+
             room.Layout.UpdateAssetCondition(
                 request.PlacedAssetId,
                 Shared.Enums.PlacedAssetCondition.Reported);

@@ -125,11 +125,9 @@ namespace UAMS.Campus.FacadeImplementations
             var ids    = authorIds.ToHashSet();
             var result = new Dictionary<Guid, string>();
 
-            // Look up by UserId (asset managers, dept managers, students, teachers)
             var byUser = await GetUserNamesAsync(ids, ct);
             foreach (var kv in byUser) result.TryAdd(kv.Key, kv.Value);
 
-            // Look up remaining by maintainer profile Id
             var unresolved = ids.Where(id => !result.ContainsKey(id)).ToList();
             if (unresolved.Count > 0)
             {
@@ -138,6 +136,56 @@ namespace UAMS.Campus.FacadeImplementations
                     .Select(m => new { m.Id, m.FullName })
                     .ToListAsync(ct);
                 foreach (var m in maintainerNames) result.TryAdd(m.Id, m.FullName);
+            }
+
+            return result;
+        }
+
+        public async Task<Dictionary<Guid, (string Name, string Role)>> GetNoteAuthorInfoAsync(
+            IEnumerable<Guid> authorIds, CancellationToken ct)
+        {
+            var ids    = authorIds.ToHashSet();
+            var result = new Dictionary<Guid, (string Name, string Role)>();
+
+            var students = await _db.students
+                .Where(s => ids.Contains(s.UserId))
+                .Select(s => new { s.UserId, s.FullName })
+                .ToListAsync(ct);
+            foreach (var x in students) result.TryAdd(x.UserId, (x.FullName, "Student"));
+
+            var teachers = await _db.teachers
+                .Where(t => ids.Contains(t.UserId))
+                .Select(t => new { t.UserId, t.FullName })
+                .ToListAsync(ct);
+            foreach (var x in teachers) result.TryAdd(x.UserId, (x.FullName, "Teacher"));
+
+            var managers = await _db.asset_managers
+                .Where(a => ids.Contains(a.UserId))
+                .Select(a => new { a.UserId, a.FullName })
+                .ToListAsync(ct);
+            foreach (var x in managers) result.TryAdd(x.UserId, (x.FullName, "Asset Manager"));
+
+            var deptManagers = await _db.department_managers
+                .Where(d => ids.Contains(d.UserId))
+                .Select(d => new { d.UserId, d.FullName })
+                .ToListAsync(ct);
+            foreach (var x in deptManagers) result.TryAdd(x.UserId, (x.FullName, "Department Manager"));
+
+            var maintainersByUserId = await _db.maintainers
+                .Where(m => ids.Contains(m.UserId))
+                .Select(m => new { m.UserId, m.FullName })
+                .ToListAsync(ct);
+            foreach (var x in maintainersByUserId) result.TryAdd(x.UserId, (x.FullName, "Maintainer"));
+
+            // Second pass: remaining IDs may be maintainer profile Ids
+            var unresolved = ids.Where(id => !result.ContainsKey(id)).ToList();
+            if (unresolved.Count > 0)
+            {
+                var maintainersByProfileId = await _db.maintainers
+                    .Where(m => unresolved.Contains(m.Id))
+                    .Select(m => new { m.Id, m.FullName })
+                    .ToListAsync(ct);
+                foreach (var m in maintainersByProfileId) result.TryAdd(m.Id, (m.FullName, "Maintainer"));
             }
 
             return result;

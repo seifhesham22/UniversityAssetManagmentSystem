@@ -30,10 +30,14 @@ namespace UAMS.Room.Features.TicketFeatures.GetTicketDetail
             var assetName = room?.Layout.FindAsset(ticket.PlacedAssetId)?.AssetName ?? "Unknown";
             var roomName = room?.Name ?? "Unknown";
 
-            var userIds = ticket.TicketNotes.Select(n => n.AuthorId).ToHashSet();
-            userIds.Add(ticket.ReporterId);
+            var userIds = new HashSet<Guid> { ticket.ReporterId };
             if (ticket.ConfirmedByUserId.HasValue) userIds.Add(ticket.ConfirmedByUserId.Value);
             var userNames = await _campusFacade.GetUserNamesAsync(userIds, ct);
+
+            var noteAuthorIds = ticket.TicketNotes.Select(n => n.AuthorId).Distinct().ToList();
+            var noteAuthorInfo = noteAuthorIds.Count > 0
+                ? await _campusFacade.GetNoteAuthorInfoAsync(noteAuthorIds, ct)
+                : new Dictionary<Guid, (string Name, string Role)>();
 
             string? deptName = null;
             if (ticket.DepartmentId.HasValue)
@@ -49,12 +53,12 @@ namespace UAMS.Room.Features.TicketFeatures.GetTicketDetail
 
             var notes = ticket.TicketNotes
                 .OrderBy(n => n.CreatedAtUtc)
-                .Select(n => new TicketNoteView(
-                    Id: n.Id,
-                    AuthorId: n.AuthorId,
-                    AuthorName: userNames.GetValueOrDefault(n.AuthorId, "Unknown"),
-                    Content: n.Content,
-                    CreatedAtUtc: n.CreatedAtUtc))
+                .Select(n =>
+                {
+                    var info = noteAuthorInfo.GetValueOrDefault(n.AuthorId, (Name: "Unknown", Role: "Unknown"));
+                    var role = n.AuthorId == ticket.ReporterId ? "Reporter" : info.Role;
+                    return new TicketNoteView(n.Id, n.AuthorId, info.Name, role, n.Content, n.CreatedAtUtc);
+                })
                 .ToList();
 
             return new TicketDetailView(
