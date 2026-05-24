@@ -9,6 +9,8 @@ namespace Shared.Enums
         OnWall,
         OnCeiling,
         OnFloor,
-        OnSurface
+        OnSurface,
+        InWall,
+        UnderSurface,
     }
 }

@@ -40,7 +40,8 @@ namespace UAMS.Room.Features.RoomManagment.GetRoomById
                         placedAsset.Rotation,
                         placedAsset.Condition.ToString(),
                         placedAsset.GroupId,
-                        placedAsset.GroupLabel)).ToList(),
+                        placedAsset.GroupLabel,
+                        placedAsset.CanvasRoomId)).ToList(),
                     existingRoom.Layout.LastModifiedDate,
                     existingRoom.Layout.LastModifiedUserId));
         }

@@ -11,5 +11,6 @@
         float Rotation,
         string Condition,
         Guid? GroupId,
-        string? GroupLabel);
+        string? GroupLabel,
+        Guid? CanvasRoomId);
 }

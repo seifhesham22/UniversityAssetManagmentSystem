@@ -21,5 +21,9 @@ namespace UAMS.Room.Models
         public float Width { get; set; }
         public float Height { get; set; }
         public float Rotation { get; set; } = 0;
+
+        // The Id of the Infrastructure (room) asset this asset lives inside on the canvas.
+        // Used so moving a room moves all its child assets together.
+        public Guid? CanvasRoomId { get; set; }
     }
 }
