@@ -21,7 +21,8 @@ namespace UAMS.Room.Features.LayoutFeatures
         float Rotation,
         Guid? GroupId,
         string? GroupLabel,
-        Guid? CanvasRoomId);
+        Guid? CanvasRoomId,
+        Guid? CompositeId);
 
     internal sealed class SaveLayoutHandler(
         RoomDesignDbContext db,
@@ -69,6 +70,7 @@ namespace UAMS.Room.Features.LayoutFeatures
                 GroupId = a.GroupId,
                 GroupLabel = a.GroupLabel,
                 CanvasRoomId = a.CanvasRoomId,
+                CompositeId = a.CompositeId,
             }).ToList();
 
             var diff = room.Layout.ApplySnapshot(incoming, cmd.UserId);

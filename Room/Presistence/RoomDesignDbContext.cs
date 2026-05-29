@@ -12,6 +12,7 @@ namespace UAMS.Room.Presistence
     {
         public DbSet<UAMS.Room.Models.Room> Rooms => Set<UAMS.Room.Models.Room>();
         public DbSet<AssetDefenetion> AssetDefinitions => Set<AssetDefenetion>();
+        public DbSet<CompositeTemplate> CompositeTemplates => Set<CompositeTemplate>();
         public DbSet<ChecklistItemTemplate> CheckListItemTemplates => Set<ChecklistItemTemplate>();
         public DbSet<PlacedAssetChecklist> PlacedAssetCheckLists => Set<PlacedAssetChecklist>();
         public DbSet<PlacedAssetChecklistEntry> PlacedAssetCheckListEntries => Set<PlacedAssetChecklistEntry>();
@@ -190,6 +191,14 @@ namespace UAMS.Room.Presistence
                         $"{(int)TicketStatus.EscalatedExternally}, " +
                         $"{(int)TicketStatus.Irreparable}, " +
                         $"{(int)TicketStatus.Closed})");
+            });
+
+            modelBuilder.Entity<CompositeTemplate>(e =>
+            {
+                e.ToTable("CompositeTemplates");
+                e.HasKey(c => c.Id);
+                e.Property(c => c.Name).HasMaxLength(200).IsRequired();
+                e.OwnsMany(c => c.Items, items => { items.ToJson("Items"); });
             });
 
             modelBuilder.Entity<TicketNote>(e =>

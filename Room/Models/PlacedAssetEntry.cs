@@ -25,5 +25,8 @@ namespace UAMS.Room.Models
         // The Id of the Infrastructure (room) asset this asset lives inside on the canvas.
         // Used so moving a room moves all its child assets together.
         public Guid? CanvasRoomId { get; set; }
+
+        // Links this asset to a locked composite group on the canvas.
+        public Guid? CompositeId { get; set; }
     }
 }

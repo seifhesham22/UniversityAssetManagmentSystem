@@ -12,5 +12,6 @@
         string Condition,
         Guid? GroupId,
         string? GroupLabel,
-        Guid? CanvasRoomId);
+        Guid? CanvasRoomId,
+        Guid? CompositeId);
 }

@@ -20,6 +20,9 @@ using UAMS.Room.Features.RoomManagment.CreateRoom;
 using UAMS.Room.Features.RoomManagment.GetRoomById;
 using UAMS.Room.Features.RoomManagment.GetRoomsByFaculty;
 using UAMS.Room.Features.RoomManagment.ReOpenRoom;
+using UAMS.Room.Features.CompositeTemplateFeatures.CreateCompositeTemplate;
+using UAMS.Room.Features.CompositeTemplateFeatures.GetCompositeTemplates;
+using UAMS.Room.Features.CompositeTemplateFeatures.DeleteCompositeTemplate;
 
 namespace UAMS.API.Controllers
 {
@@ -218,6 +221,32 @@ namespace UAMS.API.Controllers
             await mediator.Send(
                 new UpdatePlacedAssetChecklistCommand(
                     checklistId, req.ChecklistItemId, req.IsChecked, Me()), ct);
+            return NoContent();
+        }
+
+        // ══════════════════════════════════════════════════════════════════════
+        // Composite Templates
+        // ══════════════════════════════════════════════════════════════════════
+
+        // GET  /api/room-design/composite-templates
+        [HttpGet("composite-templates")]
+        [Authorize(Policy = Policies.CanDesignRoom)]
+        public async Task<IActionResult> GetCompositeTemplates(CancellationToken ct) =>
+            Ok(await mediator.Send(new GetCompositeTemplatesQuery(), ct));
+
+        // POST /api/room-design/composite-templates
+        [HttpPost("composite-templates")]
+        [Authorize(Policy = Policies.SuperAdminOnly)]
+        public async Task<IActionResult> CreateCompositeTemplate(
+            [FromBody] CreateCompositeTemplateCommand cmd, CancellationToken ct) =>
+            Ok(new { Id = await mediator.Send(cmd, ct) });
+
+        // DELETE /api/room-design/composite-templates/{id}
+        [HttpDelete("composite-templates/{id:guid}")]
+        [Authorize(Policy = Policies.SuperAdminOnly)]
+        public async Task<IActionResult> DeleteCompositeTemplate(Guid id, CancellationToken ct)
+        {
+            await mediator.Send(new DeleteCompositeTemplateCommand(id), ct);
             return NoContent();
         }
     }
