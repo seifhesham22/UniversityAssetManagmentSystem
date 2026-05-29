@@ -24,11 +24,22 @@ namespace UAMS.Room.Features.LayoutFeatures
         Guid? CanvasRoomId,
         Guid? CompositeId);
 
+    
+
+
     internal sealed class SaveLayoutHandler(
         RoomDesignDbContext db,
         IFacultyFacade _facultyFacade)
         : IRequestHandler<SaveLayoutCommand>
     {
+
+        private static readonly HashSet<Guid> StructuralIds = new()
+    {
+        Guid.Parse("00000000-0000-4000-8000-000000000001"), // Room
+        Guid.Parse("00000000-0000-4000-8000-000000000002"), // Door
+        Guid.Parse("00000000-0000-4000-8000-000000000003"), // Window
+    };
+
         public async Task Handle(SaveLayoutCommand cmd, CancellationToken ct)
         {
             var room = await db.Rooms
@@ -44,6 +55,7 @@ namespace UAMS.Room.Features.LayoutFeatures
             var requestedDefIds = cmd.PlacedAssets
                 .Select(a => a.AssetDefinitionId)
                 .Distinct()
+                .Where(id => !StructuralIds.Contains(id))
                 .ToList();
 
             var assetDefs = await db.AssetDefinitions
@@ -89,7 +101,7 @@ namespace UAMS.Room.Features.LayoutFeatures
                 var defLookup = assetDefs.ToDictionary(ad => ad.Id);
                 var studyYear = CurrentStudyYear();
 
-                foreach (var addedAsset in incoming.Where(a => diff.AddedPlacedAssetIds.Contains(a.Id)))
+                foreach (var addedAsset in incoming.Where(a => diff.AddedPlacedAssetIds.Contains(a.Id) && !StructuralIds.Contains(a.AssetDefinitionId)))
                 {
                     if (!defLookup.TryGetValue(addedAsset.AssetDefinitionId, out var def))
                         continue;
