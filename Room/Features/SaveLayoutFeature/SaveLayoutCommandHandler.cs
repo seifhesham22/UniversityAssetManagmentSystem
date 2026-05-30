@@ -22,7 +22,8 @@ namespace UAMS.Room.Features.LayoutFeatures
         Guid? GroupId,
         string? GroupLabel,
         Guid? CanvasRoomId,
-        Guid? CompositeId);
+        Guid? CompositeId,
+        string? Metadata);
 
     
 
@@ -83,6 +84,7 @@ namespace UAMS.Room.Features.LayoutFeatures
                 GroupLabel = a.GroupLabel,
                 CanvasRoomId = a.CanvasRoomId,
                 CompositeId = a.CompositeId,
+                Metadata = a.Metadata,
             }).ToList();
 
             var diff = room.Layout.ApplySnapshot(incoming, cmd.UserId);

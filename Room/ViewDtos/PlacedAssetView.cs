@@ -13,5 +13,6 @@
         Guid? GroupId,
         string? GroupLabel,
         Guid? CanvasRoomId,
-        Guid? CompositeId);
+        Guid? CompositeId,
+        string? Metadata);
 }

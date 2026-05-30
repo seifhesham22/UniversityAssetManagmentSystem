@@ -28,5 +28,9 @@ namespace UAMS.Room.Models
 
         // Links this asset to a locked composite group on the canvas.
         public Guid? CompositeId { get; set; }
+
+        // Free-form JSON for structural assets (e.g. the room polygon: vertices + wall openings).
+        // Null for ordinary assets. Stored inside the Layout JSON column, so no migration is needed.
+        public string? Metadata { get; set; }
     }
 }

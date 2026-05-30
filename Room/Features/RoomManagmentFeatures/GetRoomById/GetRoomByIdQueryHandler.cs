@@ -42,7 +42,8 @@ namespace UAMS.Room.Features.RoomManagment.GetRoomById
                         placedAsset.GroupId,
                         placedAsset.GroupLabel,
                         placedAsset.CanvasRoomId,
-                        placedAsset.CompositeId)).ToList(),
+                        placedAsset.CompositeId,
+                        placedAsset.Metadata)).ToList(),
                     existingRoom.Layout.LastModifiedDate,
                     existingRoom.Layout.LastModifiedUserId));
         }
